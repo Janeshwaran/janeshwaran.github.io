@@ -1,0 +1,1314 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FAANG Frontend Roadmap Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f7f6f3; --surface: #ffffff; --surface2: #f3f2ef;
+  --border: #e8e5de; --border2: #d6d3ca;
+  --text: #1c1917; --muted: #78716c; --faint: #a8a29e;
+  --p1: #16a34a; --p1l: #dcfce7; --p1d: #14532d;
+  --p2: #2563eb; --p2l: #dbeafe; --p2d: #1e3a8a;
+  --p3: #d97706; --p3l: #fef3c7; --p3d: #78350f;
+  --p4: #7c3aed; --p4l: #ede9fe; --p4d: #3b0764;
+  --p5: #dc2626; --p5l: #fee2e2; --p5d: #7f1d1d;
+  --accent: #2563eb;
+  --radius: 10px; --sidebar: 268px;
+  --checked-bg: #f9f8f6;
+  --modal-overlay: rgba(0,0,0,0.45);
+  --shadow: 0 4px 24px rgba(0,0,0,0.08);
+}
+[data-theme="dark"] {
+  --bg: #111110; --surface: #1c1c1a; --surface2: #232320;
+  --border: #2e2e2b; --border2: #3a3a36;
+  --text: #e8e6e1; --muted: #8c8a85; --faint: #5c5a56;
+  --p1: #22c55e; --p1l: #14532d; --p1d: #bbf7d0;
+  --p2: #3b82f6; --p2l: #1e3a8a; --p2d: #bfdbfe;
+  --p3: #f59e0b; --p3l: #78350f; --p3d: #fde68a;
+  --p4: #a855f7; --p4l: #3b0764; --p4d: #e9d5ff;
+  --p5: #ef4444; --p5l: #7f1d1d; --p5d: #fecaca;
+  --accent: #3b82f6;
+  --checked-bg: #181817;
+  --modal-overlay: rgba(0,0,0,0.7);
+  --shadow: 0 4px 24px rgba(0,0,0,0.4);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--text); display: flex; min-height: 100vh; transition: background .2s, color .2s; }
+
+/* ── SIDEBAR ── */
+#sidebar {
+  width: var(--sidebar); height: 100vh; background: var(--surface);
+  border-right: 1px solid var(--border); display: flex; flex-direction: column;
+  position: fixed; top: 0; left: 0; z-index: 100;
+}
+.sidebar-head {
+  padding: 16px 16px 12px; border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.sidebar-logo-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2px; }
+.sidebar-logo { font-size: 14px; font-weight: 700; letter-spacing: -.3px; }
+.sidebar-sub { font-size: 10px; color: var(--muted); font-family: 'JetBrains Mono', monospace; margin-bottom: 10px; }
+.overall-progress { }
+.op-label { display: flex; justify-content: space-between; font-size: 10px; color: var(--muted); margin-bottom: 4px; }
+.op-bar { height: 4px; background: var(--border); border-radius: 3px; overflow: hidden; }
+.op-fill { height: 100%; background: var(--accent); border-radius: 3px; transition: width .4s; }
+
+/* sidebar toolbar */
+.sidebar-toolbar {
+  display: flex; gap: 5px; padding: 8px 16px; border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.stb-btn {
+  flex: 1; display: flex; align-items: center; justify-content: center; gap: 4px;
+  padding: 5px 4px; border: 1px solid var(--border); border-radius: 7px;
+  background: transparent; cursor: pointer; font-family: 'Outfit', sans-serif;
+  font-size: 10px; font-weight: 500; color: var(--muted); transition: all .15s;
+}
+.stb-btn:hover { background: var(--surface2); color: var(--text); border-color: var(--border2); }
+.stb-btn svg { width: 12px; height: 12px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+/* dark toggle */
+.dark-toggle {
+  width: 34px; height: 18px; border-radius: 9px; background: var(--border);
+  border: 1px solid var(--border2); cursor: pointer; position: relative; transition: background .2s; flex-shrink: 0;
+  display: flex; align-items: center; padding: 2px;
+}
+.dark-toggle.on { background: var(--accent); border-color: var(--accent); }
+.dark-toggle-knob {
+  width: 12px; height: 12px; border-radius: 50%; background: #fff;
+  transition: transform .2s; display: flex; align-items: center; justify-content: center;
+  font-size: 7px; line-height: 1;
+}
+.dark-toggle.on .dark-toggle-knob { transform: translateX(16px); }
+
+/* scrollable week list */
+#sidebar-weeks { overflow-y: auto; flex: 1; }
+#sidebar-weeks::-webkit-scrollbar { width: 4px; }
+#sidebar-weeks::-webkit-scrollbar-track { background: transparent; }
+#sidebar-weeks::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+.phase-group { border-bottom: 1px solid var(--border); }
+.phase-label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; padding: 10px 16px 4px; color: var(--faint); }
+.week-item { display: flex; align-items: center; gap: 8px; padding: 6px 16px; cursor: pointer; transition: background .12s; }
+.week-item:hover { background: var(--surface2); }
+.week-item.active { background: var(--text); }
+.week-item.active .week-num, .week-item.active .week-name, .week-item.active .week-pct { color: var(--bg) !important; }
+.week-num { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--faint); width: 20px; flex-shrink: 0; }
+.week-name { font-size: 11px; font-weight: 500; flex: 1; line-height: 1.3; color: var(--text); }
+.week-pct { font-size: 9px; color: var(--faint); font-family: 'JetBrains Mono', monospace; }
+.week-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; background: var(--border); transition: background .3s; }
+
+/* ── MAIN ── */
+#main { margin-left: var(--sidebar); flex: 1; padding: 28px 36px 72px; max-width: calc(100vw - var(--sidebar)); }
+
+/* STATS BAR */
+.stats-bar { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-bottom: 24px; }
+.stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; }
+.stat-label { font-size: 10px; color: var(--muted); margin-bottom: 3px; font-weight: 500; text-transform: uppercase; letter-spacing: .04em; }
+.stat-val { font-size: 20px; font-weight: 700; letter-spacing: -.5px; }
+.stat-sub { font-size: 10px; color: var(--muted); margin-top: 1px; }
+
+/* WEEK HEADER */
+.week-header { margin-bottom: 20px; }
+.week-header-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 10px; }
+.wh-left h1 { font-size: 20px; font-weight: 700; letter-spacing: -.4px; margin-bottom: 3px; }
+.wh-left p { font-size: 12px; color: var(--muted); line-height: 1.55; max-width: 560px; }
+.phase-badge { font-size: 10px; font-weight: 600; padding: 3px 10px; border-radius: 20px; white-space: nowrap; margin-top: 2px; }
+.week-prog-row { display: flex; align-items: center; gap: 10px; }
+.week-prog-bar { flex: 1; height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; max-width: 280px; }
+.week-prog-fill { height: 100%; border-radius: 3px; transition: width .4s; }
+.week-prog-label { font-size: 11px; color: var(--muted); font-family: 'JetBrains Mono', monospace; }
+.clear-week-btn { font-size: 10px; padding: 3px 9px; border: 1px solid var(--border); border-radius: 6px; background: transparent; cursor: pointer; color: var(--muted); font-family: 'Outfit', sans-serif; transition: all .15s; }
+.clear-week-btn:hover { background: var(--surface2); color: var(--text); }
+
+/* SECTIONS */
+.section { margin-bottom: 16px; }
+.section-head { display: flex; align-items: center; gap: 8px; padding: 9px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius) var(--radius) 0 0; cursor: pointer; user-select: none; transition: background .12s; }
+.section-head:hover { background: var(--surface2); }
+.section-icon { font-size: 13px; }
+.section-title { font-size: 12px; font-weight: 600; flex: 1; }
+.section-meta { font-size: 10px; color: var(--muted); font-family: 'JetBrains Mono', monospace; }
+.section-chevron { font-size: 9px; color: var(--faint); transition: transform .2s; }
+.section-chevron.open { transform: rotate(90deg); }
+.section-body { border: 1px solid var(--border); border-top: none; border-radius: 0 0 var(--radius) var(--radius); overflow: hidden; background: var(--surface); }
+.section-body.collapsed { display: none; }
+
+/* TASKS */
+.task-item { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; border-bottom: 1px solid var(--border); transition: background .1s; }
+.task-item:last-child { border-bottom: none; }
+.task-item:hover { background: var(--surface2); }
+.task-item.checked { background: var(--checked-bg); }
+.task-cb { width: 16px; height: 16px; border-radius: 4px; border: 1.5px solid var(--border2); flex-shrink: 0; margin-top: 1px; display: flex; align-items: center; justify-content: center; transition: all .15s; cursor: pointer; }
+.task-item.checked .task-cb { background: var(--text); border-color: var(--text); }
+.task-item.checked .task-cb::after { content: '✓'; color: var(--bg); font-size: 10px; font-weight: 700; }
+.task-content { flex: 1; min-width: 0; cursor: pointer; }
+.task-title { font-size: 12px; line-height: 1.45; font-weight: 500; }
+.task-item.checked .task-title { color: var(--muted); text-decoration: line-through; }
+.task-desc { font-size: 11px; color: var(--muted); margin-top: 2px; line-height: 1.45; }
+.task-resource-btn {
+  flex-shrink: 0; margin-top: 1px; width: 24px; height: 24px; border-radius: 6px;
+  border: 1px solid var(--border); background: var(--surface2); cursor: pointer;
+  display: flex; align-items: center; justify-content: center; transition: all .15s;
+  color: var(--muted);
+}
+.task-resource-btn:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
+.task-resource-btn svg { width: 12px; height: 12px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+/* NAV */
+.week-nav { display: flex; gap: 10px; margin-top: 24px; padding-top: 18px; border-top: 1px solid var(--border); }
+.nav-btn { padding: 8px 16px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--surface); cursor: pointer; font-family: 'Outfit', sans-serif; font-size: 12px; font-weight: 500; color: var(--text); transition: all .15s; }
+.nav-btn:hover { background: var(--surface2); }
+.nav-btn.primary { background: var(--text); color: var(--bg); border-color: var(--text); }
+.nav-btn.primary:hover { opacity: .85; }
+.nav-btn:disabled { opacity: .35; cursor: not-allowed; }
+
+/* ── MODAL ── */
+.modal-overlay {
+  display: none; position: fixed; inset: 0; background: var(--modal-overlay);
+  z-index: 999; align-items: center; justify-content: center;
+  padding: 20px;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+  width: 100%; max-width: 540px; max-height: 88vh; display: flex; flex-direction: column;
+  box-shadow: var(--shadow); animation: modalIn .18s ease;
+}
+@keyframes modalIn { from { opacity: 0; transform: scale(.96) translateY(8px); } to { opacity: 1; transform: none; } }
+.modal-head { padding: 16px 18px 12px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+.modal-head-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.modal-title { font-size: 14px; font-weight: 700; line-height: 1.35; flex: 1; }
+.modal-close { width: 28px; height: 28px; border-radius: 7px; border: 1px solid var(--border); background: transparent; cursor: pointer; color: var(--muted); font-size: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all .12s; }
+.modal-close:hover { background: var(--surface2); color: var(--text); }
+.modal-desc { font-size: 11px; color: var(--muted); line-height: 1.5; margin-top: 6px; }
+.modal-body { overflow-y: auto; flex: 1; padding: 14px 18px 18px; }
+.modal-body::-webkit-scrollbar { width: 4px; }
+.modal-body::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+.modal-section-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--faint); margin-bottom: 8px; margin-top: 16px; }
+.modal-section-title:first-child { margin-top: 0; }
+.resource-link {
+  display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid var(--border);
+  border-radius: 9px; text-decoration: none; color: var(--text); background: var(--surface2);
+  margin-bottom: 7px; transition: all .15s;
+}
+.resource-link:hover { border-color: var(--accent); background: var(--surface); }
+.resource-link:hover .rl-icon { background: var(--accent); color: #fff; }
+.rl-icon { width: 32px; height: 32px; border-radius: 7px; background: var(--border); display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; transition: all .15s; }
+.rl-body { flex: 1; min-width: 0; }
+.rl-name { font-size: 12px; font-weight: 600; margin-bottom: 1px; }
+.rl-desc { font-size: 10px; color: var(--muted); line-height: 1.4; }
+.rl-badge { font-size: 9px; font-weight: 600; padding: 1px 6px; border-radius: 8px; flex-shrink: 0; }
+.rl-badge.free { background: var(--p1l); color: var(--p1d); }
+.rl-badge.paid { background: var(--p3l); color: var(--p3d); }
+.rl-badge.must { background: var(--p5l); color: var(--p5d); }
+.practice-item { padding: 8px 12px; border: 1px solid var(--border); border-radius: 9px; margin-bottom: 7px; background: var(--surface2); }
+.practice-item code { font-family: 'JetBrains Mono', monospace; font-size: 11px; background: var(--border); padding: 1px 5px; border-radius: 4px; color: var(--text); }
+.practice-item p { font-size: 11px; color: var(--muted); margin-top: 3px; line-height: 1.4; }
+.tip-box { padding: 10px 12px; background: var(--p3l); border-left: 3px solid var(--p3); border-radius: 0 8px 8px 0; margin-top: 4px; }
+.tip-box p { font-size: 11px; color: var(--p3d); line-height: 1.5; }
+[data-theme="dark"] .tip-box { background: #2a1f0a; }
+[data-theme="dark"] .tip-box p { color: var(--p3d); }
+
+/* ── TOAST ── */
+#toast { position: fixed; bottom: 24px; right: 24px; z-index: 1100; display: flex; flex-direction: column; gap: 8px; }
+.toast-item { background: var(--text); color: var(--bg); padding: 10px 16px; border-radius: 9px; font-size: 12px; font-weight: 500; box-shadow: var(--shadow); animation: toastIn .2s ease; }
+@keyframes toastIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+@media (max-width: 768px) {
+  :root { --sidebar: 0px; }
+  #sidebar { display: none; }
+  #main { margin-left: 0; padding: 16px 14px 56px; }
+  .stats-bar { grid-template-columns: repeat(2,1fr); }
+}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<nav id="sidebar">
+  <div class="sidebar-head">
+    <div class="sidebar-logo-row">
+      <div class="sidebar-logo">FAANG Frontend</div>
+      <button class="dark-toggle" id="darkToggle" title="Toggle dark mode" onclick="toggleDark()">
+        <div class="dark-toggle-knob" id="darkKnob">☀</div>
+      </button>
+    </div>
+    <div class="sidebar-sub">Interview Tracker · 16 weeks</div>
+    <div class="overall-progress">
+      <div class="op-label"><span>Overall progress</span><span id="overall-pct">0%</span></div>
+      <div class="op-bar"><div class="op-fill" id="overall-bar" style="width:0%"></div></div>
+    </div>
+  </div>
+  <div class="sidebar-toolbar">
+    <button class="stb-btn" onclick="exportProgress()" title="Export progress">
+      <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Export
+    </button>
+    <button class="stb-btn" onclick="document.getElementById('importFile').click()" title="Load progress">
+      <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      Load
+    </button>
+    <input type="file" id="importFile" accept=".json" style="display:none" onchange="importProgress(event)">
+  </div>
+  <div id="sidebar-weeks"></div>
+</nav>
+
+<!-- MAIN -->
+<main id="main">
+  <div class="stats-bar">
+    <div class="stat-card"><div class="stat-label">Tasks Done</div><div class="stat-val" id="stat-done">0</div><div class="stat-sub" id="stat-total-sub">of 0 total</div></div>
+    <div class="stat-card"><div class="stat-label">Current Week</div><div class="stat-val" id="stat-week">W1</div><div class="stat-sub" id="stat-phase">Phase 1 · Foundations</div></div>
+    <div class="stat-card"><div class="stat-label">Weeks Complete</div><div class="stat-val" id="stat-weeks-done">0</div><div class="stat-sub">of 16 weeks</div></div>
+    <div class="stat-card"><div class="stat-label">Completion</div><div class="stat-val" id="stat-pct">0%</div><div class="stat-sub" id="stat-motivate">keep going!</div></div>
+  </div>
+  <div id="week-content"></div>
+</main>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal" onclick="closeModalOutside(event)">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-head-row">
+        <div class="modal-title" id="modal-title"></div>
+        <button class="modal-close" onclick="closeModal()">✕</button>
+      </div>
+      <div class="modal-desc" id="modal-desc"></div>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════
+// DATA — WEEKS WITH RESOURCES
+// ═══════════════════════════════════════════════
+const PHASES = [
+  { id:1, name:'Phase 1 — JS Foundations', color:'var(--p1)', light:'var(--p1l)', dark:'var(--p1d)', weeks:[1,2,3,4] },
+  { id:2, name:'Phase 2 — React Mastery',  color:'var(--p2)', light:'var(--p2l)', dark:'var(--p2d)', weeks:[5,6,7,8] },
+  { id:3, name:'Phase 3 — System Design',  color:'var(--p4)', light:'var(--p4l)', dark:'var(--p4d)', weeks:[9,10] },
+  { id:4, name:'Phase 4 — Interview Prep', color:'var(--p5)', light:'var(--p5l)', dark:'var(--p5d)', weeks:[11,12,13,14] },
+  { id:5, name:'Phase 5 — Final Sprint',   color:'var(--p3)', light:'var(--p3l)', dark:'var(--p3d)', weeks:[15,16] }
+];
+
+// Resources keyed by task id
+const TASK_RESOURCES = {
+  'w1-t1': {
+    links:[
+      { icon:'📖', name:'javascript.info — Variable Scope & Closure', url:'https://javascript.info/closure', desc:'Best free resource. Read "Variable scope" + "Closure" chapters.', badge:'free' },
+      { icon:'📘', name:'YDKJS — Scope & Closures (Ch 1–2)', url:'https://github.com/getify/You-Dont-Know-JS/tree/2nd-ed/scope-closures', desc:'Free on GitHub. Deepest treatment of JS scope available.', badge:'free' },
+      { icon:'🎥', name:'Codesmith — JS the Hard Parts: Closure', url:'https://www.youtube.com/watch?v=aHrvi2zTlaU', desc:'Visual walkthrough of execution context and scope chain.', badge:'free' },
+    ],
+    practice:[
+      { code:'console.log(typeof x); var x = 5;', hint:'What does hoisting do to var declarations?' },
+      { code:'function outer(){\n  let a=1;\n  function inner(){ console.log(a); }\n  inner();\n}\nouter();', hint:'Trace the scope chain from inner() outward.' }
+    ],
+    tip:'Draw the call stack and scope chain on paper as you trace. Writing > reading for retention.'
+  },
+  'w1-t2': {
+    links:[
+      { icon:'📖', name:'javascript.info — Variable Scope', url:'https://javascript.info/var', desc:'The "var" article covers hoisting in perfect detail.', badge:'free' },
+      { icon:'🔬', name:'MDN — Hoisting', url:'https://developer.mozilla.org/en-US/docs/Glossary/Hoisting', desc:'MDN reference with examples of var vs function vs let/const TDZ.', badge:'free' },
+    ],
+    practice:[
+      { code:'greet();\nfunction greet(){ console.log("hi"); }\nsayHi();\nvar sayHi = () => console.log("hey");', hint:'Function declarations are fully hoisted; var declarations are hoisted but not initialised.' },
+    ],
+    tip:'Temporal Dead Zone (TDZ) is the most commonly misunderstood part. let/const ARE hoisted — they just cannot be accessed before declaration.'
+  },
+  'w1-t3': {
+    links:[
+      { icon:'📖', name:'javascript.info — Closure', url:'https://javascript.info/closure', desc:'Full closure chapter. The loop example is essential reading.', badge:'free' },
+      { icon:'📘', name:'YDKJS — Scope & Closures Ch 3', url:'https://github.com/getify/You-Dont-Know-JS/blob/2nd-ed/scope-closures/ch3.md', desc:'The closure chapter from YDKJS 2nd edition.', badge:'free' },
+      { icon:'📄', name:'MDN — Closures', url:'https://developer.mozilla.org/en-US/docs/Web/JavaScript/Closures', desc:'MDN has excellent "practical closures" examples.', badge:'free' },
+    ],
+    practice:[
+      { code:'for(var i=0;i<3;i++){\n  setTimeout(()=>console.log(i),100);\n}', hint:'Classic closure bug. Try 3 fixes: var+IIFE, let, separate function.' },
+    ],
+    tip:'The interview answer to "what is a closure" = "a function that retains access to its outer scope even after the outer function has returned."'
+  },
+  'w1-e1': {
+    links:[
+      { icon:'🔥', name:'bigfrontend.dev — Implement memoize', url:'https://bigfrontend.dev/problem/implement-memoize-0', desc:'Exact interview-style problem. Solve before looking at solutions.', badge:'must' },
+      { icon:'📖', name:'javascript.info — Decorators & forwarding', url:'https://javascript.info/call-apply-decorators', desc:'Covers the memoize/cache decorator pattern in JS.', badge:'free' },
+    ],
+    practice:[
+      { code:'function memoize(fn) {\n  const cache = new Map();\n  return function(...args) {\n    const key = JSON.stringify(args);\n    if(cache.has(key)) return cache.get(key);\n    const result = fn.apply(this, args);\n    cache.set(key, result);\n    return result;\n  };\n}', hint:'Key challenge: how do you handle object arguments? JSON.stringify works but has edge cases.' },
+    ],
+    tip:'Follow-up question: "What if an argument is a function or circular object?" Answer: use WeakMap keyed by the first arg, or accept limitations of JSON.stringify.'
+  },
+  'w1-e2': {
+    links:[
+      { icon:'📖', name:'CSS-Tricks — Debouncing & Throttling Explained', url:'https://css-tricks.com/debouncing-throttling-explained-examples/', desc:'Best visual explanation with animated diagrams. Read this first.', badge:'must' },
+      { icon:'🔥', name:'bigfrontend.dev — Implement debounce', url:'https://bigfrontend.dev/problem/implement-debounce-0', desc:'Practice the exact interview question.', badge:'must' },
+      { icon:'🎥', name:'Fireship — Debounce vs Throttle in 100 seconds', url:'https://www.youtube.com/watch?v=cjIswDCKgu0', desc:'Quick visual comparison.', badge:'free' },
+    ],
+    practice:[
+      { code:'function debounce(fn, delay) {\n  let timer;\n  return function(...args) {\n    clearTimeout(timer);\n    timer = setTimeout(() => fn.apply(this, args), delay);\n  };\n}', hint:'Wire it to an input in CodePen and type fast — you will SEE the debounce working.' },
+    ],
+    tip:'Bonus: add a "leading" option — fires immediately on the first call and then debounces subsequent calls. This is the Lodash _.debounce API.'
+  },
+  'w1-e3': {
+    links:[
+      { icon:'📖', name:'CSS-Tricks — Debouncing & Throttling Explained', url:'https://css-tricks.com/debouncing-throttling-explained-examples/', desc:'Same article — read the throttle section specifically.', badge:'must' },
+      { icon:'🔥', name:'bigfrontend.dev — Implement throttle', url:'https://bigfrontend.dev/problem/implement-throttle', desc:'Interview problem. Time limit version.', badge:'must' },
+    ],
+    practice:[
+      { code:'function throttle(fn, limit) {\n  let lastCall = 0;\n  return function(...args) {\n    const now = Date.now();\n    if(now - lastCall >= limit) {\n      lastCall = now;\n      return fn.apply(this, args);\n    }\n  };\n}', hint:'Attach to a scroll event handler. Scroll fast and watch it fire at most once per limit ms.' },
+    ],
+    tip:'Key distinction to memorise: debounce = "wait for silence then fire once". Throttle = "fire at most once per N ms regardless".'
+  },
+  'w1-e4': {
+    links:[
+      { icon:'📖', name:'javascript.info — Currying', url:'https://javascript.info/currying-partials', desc:'Full chapter on currying and partial application.', badge:'free' },
+      { icon:'🔥', name:'bigfrontend.dev — Implement curry()', url:'https://bigfrontend.dev/problem/implement-curry', desc:'Interview problem. Must handle both curry(a)(b)(c) and curry(a,b)(c).', badge:'must' },
+    ],
+    practice:[
+      { code:'function curry(fn) {\n  return function curried(...args) {\n    if(args.length >= fn.length) {\n      return fn.apply(this, args);\n    }\n    return function(...more) {\n      return curried.apply(this, args.concat(more));\n    };\n  };\n}', hint:'fn.length gives the number of declared parameters. That is the arity you are waiting for.' },
+    ],
+    tip:'Currying is about partial application. Real use: add(1)(2)(3) useful for composing pipelines. Less common in modern JS but still a frequent interview topic.'
+  },
+  'w1-e5': {
+    links:[
+      { icon:'🔥', name:'bigfrontend.dev — Implement Promise.all', url:'https://bigfrontend.dev/problem/implement-promise-all', desc:'Exact interview question. Solve it, then check solution.', badge:'must' },
+      { icon:'📖', name:'javascript.info — Promise API', url:'https://javascript.info/promise-api', desc:'All 5 static Promise methods explained with examples.', badge:'free' },
+    ],
+    practice:[
+      { code:'function promiseAll(promises) {\n  return new Promise((resolve, reject) => {\n    const results = [];\n    let count = 0;\n    if(!promises.length) return resolve([]);\n    promises.forEach((p, i) => {\n      Promise.resolve(p).then(val => {\n        results[i] = val;\n        if(++count === promises.length) resolve(results);\n      }).catch(reject);\n    });\n  });\n}', hint:'Preserve ORDER of results (not order of resolution). Use index i, not push().' },
+    ],
+    tip:'The subtle bug everyone makes: using push() instead of results[i] = val. push() gives wrong order when promises resolve at different times.'
+  },
+  'w1-e7': {
+    links:[
+      { icon:'🔥', name:'bigfrontend.dev — Implement EventEmitter', url:'https://bigfrontend.dev/problem/create-an-event-emitter', desc:'Classic FAANG interview problem. Build on/off/emit/once.', badge:'must' },
+      { icon:'📖', name:'Node.js EventEmitter docs', url:'https://nodejs.org/api/events.html', desc:'The spec your EventEmitter should match (behaviour reference).', badge:'free' },
+      { icon:'🎥', name:'NeetCode — EventEmitter walkthrough', url:'https://www.youtube.com/results?search_query=eventemitter+javascript+implementation', desc:'Search "EventEmitter JavaScript implementation" on YouTube.', badge:'free' },
+    ],
+    tip:'once() is the tricky one: wrap the listener in an outer function that calls off() before calling the real listener. That way it auto-removes itself.'
+  },
+  'w1-d1': {
+    links:[
+      { icon:'🔥', name:'LeetCode #1 — Two Sum', url:'https://leetcode.com/problems/two-sum/', desc:'Start with brute force O(n²), then hash map O(n). Know both.', badge:'must' },
+      { icon:'🎥', name:'NeetCode — Two Sum', url:'https://www.youtube.com/watch?v=KLlXCFG5TnA', desc:'Clear explanation of the hash map approach with diagram.', badge:'free' },
+    ],
+    practice:[
+      { code:'// Hash map approach — O(n) time O(n) space\nfunction twoSum(nums, target) {\n  const map = {};\n  for(let i=0; i<nums.length; i++) {\n    const complement = target - nums[i];\n    if(map[complement] !== undefined) return [map[complement], i];\n    map[nums[i]] = i;\n  }\n}', hint:'Pattern: "store complement, look it up". You will use this same pattern 20+ more times.' },
+    ],
+    tip:'Pattern name: "Complement Hash Map". Learn to recognise this setup: "find two things that sum/equal X" → hash map.'
+  },
+  'w1-d5': {
+    links:[
+      { icon:'🔥', name:'LeetCode #3 — Longest Substring Without Repeating', url:'https://leetcode.com/problems/longest-substring-without-repeating-characters/', desc:'Classic sliding window. Must know cold.', badge:'must' },
+      { icon:'🎥', name:'NeetCode — Sliding Window explanation', url:'https://www.youtube.com/watch?v=wiGpQwVHdE0', desc:'Best visualisation of the variable sliding window pattern.', badge:'free' },
+    ],
+    tip:'Sliding window pattern: left pointer + right pointer. Expand right freely, shrink left when window becomes invalid (duplicate found).'
+  },
+  'w2-t1': {
+    links:[
+      { icon:'📖', name:'javascript.info — Prototypal inheritance', url:'https://javascript.info/prototype-inheritance', desc:'4 chapters: Prototypal inheritance, F.prototype, Native prototypes, Prototype methods.', badge:'free' },
+      { icon:'📘', name:'YDKJS — this & Object Prototypes', url:'https://github.com/getify/You-Dont-Know-JS/tree/2nd-ed/objects-classes', desc:'Kyle Simpson\'s deep treatment of prototypes and the "this" keyword.', badge:'free' },
+    ],
+    practice:[
+      { code:'function Animal(name){ this.name = name; }\nAnimal.prototype.speak = function(){\n  console.log(this.name + " makes a sound");\n};\nconst dog = new Animal("Rex");\ndog.speak();\nconsole.log(dog.__proto__ === Animal.prototype);', hint:'Trace: dog.__proto__ → Animal.prototype → Object.prototype → null' },
+    ],
+    tip:'The prototype chain: every object has [[Prototype]]. Property lookup walks up the chain until it finds it or hits null.'
+  },
+  'w2-t3': {
+    links:[
+      { icon:'📖', name:'javascript.info — Object methods, "this"', url:'https://javascript.info/object-methods', desc:'Covers all 4 binding rules with examples.', badge:'free' },
+      { icon:'🔥', name:'bigfrontend.dev — Implement bind()', url:'https://bigfrontend.dev/problem/create-your-own-Function.prototype.bind', desc:'Very common interview question. Build bind from scratch.', badge:'must' },
+    ],
+    tip:'Arrow functions do NOT have their own "this" — they inherit from the surrounding lexical context. This is why they cannot be used as constructors.'
+  },
+  'w2-c2': {
+    links:[
+      { icon:'🎮', name:'Flexbox Froggy — complete all 24 levels', url:'https://flexboxfroggy.com/', desc:'Best interactive Flexbox game. Do all 24 levels before reading.', badge:'must' },
+      { icon:'📖', name:'CSS-Tricks — Complete Guide to Flexbox', url:'https://css-tricks.com/snippets/css/a-guide-to-flexbox/', desc:'The definitive visual reference. Bookmark this forever.', badge:'free' },
+      { icon:'🔬', name:'Flexbox playground', url:'https://flexbox.tech/', desc:'Interactive playground to test every flex property.', badge:'free' },
+    ],
+    tip:'Most common confusion: flex-direction changes what "main axis" means. justify-content = main axis. align-items = cross axis. Always think axis first.'
+  },
+  'w2-c3': {
+    links:[
+      { icon:'🎮', name:'CSS Grid Garden — complete all 28 levels', url:'https://cssgridgarden.com/', desc:'Best interactive Grid game. Do all 28 levels.', badge:'must' },
+      { icon:'📖', name:'CSS-Tricks — Complete Guide to Grid', url:'https://css-tricks.com/snippets/css/complete-guide-grid/', desc:'Visual reference for every grid property.', badge:'free' },
+      { icon:'🔬', name:'Grid by Example — Rachel Andrew', url:'https://gridbyexample.com/', desc:'Real-world examples and patterns from a CSS Grid expert.', badge:'free' },
+    ],
+    tip:'auto-fit vs auto-fill: auto-fit collapses empty tracks, auto-fill preserves them. Use auto-fit with minmax(200px, 1fr) for responsive grids without media queries.'
+  },
+  'w3-t3': {
+    links:[
+      { icon:'📖', name:'web.dev — Responsive Design', url:'https://web.dev/learn/design/', desc:'Google\'s complete guide to responsive design. 20+ chapters.', badge:'free' },
+      { icon:'📖', name:'MDN — CSS clamp()', url:'https://developer.mozilla.org/en-US/docs/Web/CSS/clamp', desc:'Fluid typography with clamp(min, preferred, max).', badge:'free' },
+      { icon:'📖', name:'web.dev — Container Queries', url:'https://web.dev/articles/csr-with-container-queries', desc:'The future of responsive components (supported in all browsers now).', badge:'free' },
+    ],
+    tip:'Mobile-first = start with min-width media queries. Easier to progressively enhance than to override desktop styles for mobile.'
+  },
+  'w3-a1': {
+    links:[
+      { icon:'📖', name:'web.dev — Learn Accessibility', url:'https://web.dev/learn/accessibility/', desc:'Google\'s 27-chapter accessibility course. Free and comprehensive.', badge:'must' },
+      { icon:'📖', name:'MDN — ARIA basics', url:'https://developer.mozilla.org/en-US/docs/Learn/Accessibility/WAI-ARIA_basics', desc:'ARIA roles, properties, and states explained.', badge:'free' },
+      { icon:'🔬', name:'a11y project checklist', url:'https://www.a11yproject.com/checklist/', desc:'WCAG 2.1 checklist. Run through this on your projects.', badge:'free' },
+    ],
+    tip:'First Rule of ARIA: don\'t use ARIA if a native HTML element already has the correct semantics. <button> > <div role="button"> always.'
+  },
+  'w4-t1': {
+    links:[
+      { icon:'📖', name:'howbrowserswork.net — Tali Garsiel', url:'https://web.dev/articles/howbrowserswork', desc:'The definitive deep dive into browser internals. Essential reading.', badge:'must' },
+      { icon:'🎥', name:'Google Chrome Developers — Life of a Pixel', url:'https://www.youtube.com/watch?v=K2QHdgAKP-s', desc:'How a web page goes from HTML to pixels on screen. Internal Google talk.', badge:'must' },
+      { icon:'📖', name:'web.dev — Rendering Performance', url:'https://web.dev/articles/rendering-performance', desc:'Practical guide to avoiding layout thrashing and paint storms.', badge:'free' },
+    ],
+    tip:'The critical path: Parse HTML → DOM, Parse CSS → CSSOM, Combine → Render Tree, Layout (geometry), Paint (pixels), Composite (layers). Block any step = blocked page.'
+  },
+  'w4-n3': {
+    links:[
+      { icon:'📖', name:'MDN — Cross-Origin Resource Sharing (CORS)', url:'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS', desc:'Complete CORS reference with examples of all header types.', badge:'free' },
+      { icon:'🔬', name:'CORS playground — test CORS headers live', url:'https://cors-anywhere.herokuapp.com/', desc:'Test CORS behaviour with real requests.', badge:'free' },
+    ],
+    tip:'Simple vs preflighted: simple requests (GET/POST with safe headers) go straight. Preflighted requests send OPTIONS first to ask permission. Know what triggers a preflight.'
+  },
+  'w4-n5': {
+    links:[
+      { icon:'📖', name:'web.dev — XSS explained', url:'https://portswigger.net/web-security/cross-site-scripting', desc:'PortSwigger (Burp Suite) has the best XSS educational content.', badge:'free' },
+      { icon:'🔬', name:'OWASP Top 10 Web Security Risks', url:'https://owasp.org/www-project-top-ten/', desc:'Industry standard list. Know at least the top 5 for interviews.', badge:'must' },
+      { icon:'📖', name:'content-security-policy.com', url:'https://content-security-policy.com/', desc:'Interactive CSP reference and examples.', badge:'free' },
+    ],
+    tip:'XSS = attacker injects script into your page. Prevent with: CSP, output encoding, HttpOnly cookies. CSRF = forged cross-site request. Prevent with: SameSite cookies, CSRF tokens.'
+  },
+  'w5-t1': {
+    links:[
+      { icon:'📖', name:'React docs — Reconciliation', url:'https://react.dev/learn/preserving-and-resetting-state', desc:'Official docs on preserving and resetting state through the tree.', badge:'must' },
+      { icon:'🎥', name:'Build your own React — Rodrigo Pombo', url:'https://pomb.us/build-your-own-react/', desc:'Step-by-step guide to implementing createElement, render, useState from scratch.', badge:'must' },
+      { icon:'🎥', name:'React Fiber Architecture explained', url:'https://www.youtube.com/watch?v=ZCuYPiUIONs', desc:'Deep dive into React\'s fiber architecture and incremental rendering.', badge:'free' },
+    ],
+    tip:'Key insight: React does two phases. Render phase (pure, can be interrupted) = build the fiber tree. Commit phase (has side effects, synchronous) = apply to DOM.'
+  },
+  'w5-h1': {
+    links:[
+      { icon:'📖', name:'React docs — useState', url:'https://react.dev/reference/react/useState', desc:'Official reference with all edge cases documented.', badge:'free' },
+      { icon:'📖', name:'React docs — useEffect', url:'https://react.dev/reference/react/useEffect', desc:'The new docs have the best explanation of effect lifecycle.', badge:'must' },
+      { icon:'🎥', name:'Jack Herrington — UseEffect is NOT a Lifecycle Hook', url:'https://www.youtube.com/watch?v=M7Kkd4D5mYE', desc:'Common mental model mistake corrected.', badge:'free' },
+    ],
+    tip:'useEffect mental model: "synchronise with an external system". It is NOT "run code after render". This distinction fixes most useEffect bugs.'
+  },
+  'w5-h2': {
+    links:[
+      { icon:'📖', name:'React docs — useMemo', url:'https://react.dev/reference/react/useMemo', desc:'When to use useMemo. The docs explicitly say when NOT to use it.', badge:'must' },
+      { icon:'🎥', name:'Nadia Makarevich — useMemo and useCallback demystified', url:'https://www.youtube.com/results?search_query=nadia+makarevich+usememo+usecallback', desc:'Best explanation of when these hooks actually help.', badge:'must' },
+    ],
+    tip:'useMemo/useCallback only help when: (1) passed to a child wrapped in React.memo, OR (2) used as a dependency in another hook. Otherwise they add overhead for no benefit.'
+  },
+  'w6-t1': {
+    links:[
+      { icon:'📖', name:'patterns.dev — Higher-Order Components', url:'https://www.patterns.dev/react/hoc-pattern', desc:'Visual pattern guide with React-specific examples.', badge:'must' },
+      { icon:'📖', name:'patterns.dev — Hooks Pattern', url:'https://www.patterns.dev/react/hooks-pattern', desc:'How hooks replaced many HOC use cases.', badge:'free' },
+    ],
+    tip:'HOCs are mostly replaced by hooks in modern React. But you must know them because (1) class component codebases use them heavily and (2) interviewers ask about them.'
+  },
+  'w6-t3': {
+    links:[
+      { icon:'📖', name:'patterns.dev — Compound Components', url:'https://www.patterns.dev/react/compound-pattern', desc:'The compound component pattern with Context.', badge:'must' },
+      { icon:'🎥', name:'Kent C Dodds — Compound Components', url:'https://www.youtube.com/watch?v=hEGg-3pIHlE', desc:'KCD invented this pattern. Watch the original talk.', badge:'free' },
+    ],
+    tip:'The Select/Option mental model: parent provides implicit context, children consume it. No prop drilling. Components only make sense together.'
+  },
+  'w7-t5': {
+    links:[
+      { icon:'📖', name:'TanStack Query docs', url:'https://tanstack.com/query/latest/docs/framework/react/overview', desc:'Full docs. Focus on useQuery, useMutation, QueryClient setup.', badge:'must' },
+      { icon:'🎥', name:'Jack Herrington — React Query in 100 seconds', url:'https://www.youtube.com/watch?v=novnyCaa7To', desc:'Quick overview of what React Query solves.', badge:'free' },
+      { icon:'📖', name:'TK Dodo — Practical React Query', url:'https://tkdodo.eu/blog/practical-react-query', desc:'Best blog series on React Query patterns. 20+ articles.', badge:'must' },
+    ],
+    tip:'staleTime vs cacheTime: staleTime = how long data is "fresh" (skip refetch). cacheTime = how long inactive cache entry lives. Default staleTime = 0 (always stale = always refetch on mount).'
+  },
+  'w8-t2': {
+    links:[
+      { icon:'📖', name:'React docs — React.memo', url:'https://react.dev/reference/react/memo', desc:'Official docs with examples of when it helps and when it does not.', badge:'free' },
+      { icon:'🎥', name:'Nadia Makarevich — React Re-renders Guide', url:'https://www.developerway.com/posts/react-re-renders-guide', desc:'Best deep dive on what causes re-renders and how to fix them.', badge:'must' },
+    ],
+    tip:'Measure first: open React DevTools Profiler, click record, interact with your app, stop. Find the components with the tallest bars. Only then add React.memo.'
+  },
+  'w8-c1': {
+    links:[
+      { icon:'📖', name:'web.dev — Largest Contentful Paint', url:'https://web.dev/articles/lcp', desc:'Official LCP guide with all causes and fixes.', badge:'must' },
+      { icon:'📖', name:'web.dev — Core Web Vitals', url:'https://web.dev/articles/vitals', desc:'Overview of all three Core Web Vitals and their targets.', badge:'must' },
+      { icon:'🔬', name:'PageSpeed Insights — test your site', url:'https://pagespeed.web.dev/', desc:'Run your portfolio/project. Read every suggestion.', badge:'free' },
+    ],
+    tip:'Biggest LCP killers: render-blocking CSS, unoptimised hero image, slow server TTFB. Fix in that order. Preload the LCP image: <link rel="preload" as="image">.'
+  },
+  'w9-t1': {
+    links:[
+      { icon:'📖', name:'GreatFrontEnd — Frontend System Design', url:'https://www.greatfrontend.com/system-design', desc:'Best frontend-specific system design resource. Free guides available.', badge:'must' },
+      { icon:'🎥', name:'Rahul Pandey — Frontend System Design playlist', url:'https://www.youtube.com/playlist?list=PL4CFloQ4GGWICE0Tz6iXKfN3XWkXRlboU', desc:'15+ videos on designing real frontend systems.', badge:'must' },
+      { icon:'📖', name:'Frontend System Design Interviews — Alex Xu style', url:'https://khalilstemmler.com/articles/software-design-architecture/full-stack-software-design/', desc:'Adapt backend system design thinking to frontend.', badge:'free' },
+    ],
+    tip:'RADIO = Requirements → Architecture → Data model → Interface design → Optimisation. State this framework at the start of every design. It signals structure.'
+  },
+  'w9-d1': {
+    links:[
+      { icon:'📖', name:'GreatFrontEnd — Design a News Feed', url:'https://www.greatfrontend.com/questions/system-design/news-feed-facebook', desc:'Full worked solution for Facebook News Feed system design.', badge:'must' },
+      { icon:'🎥', name:'Exponent — News Feed Frontend Design', url:'https://www.youtube.com/results?search_query=news+feed+frontend+system+design', desc:'Watch at least one video walkthrough before your own attempt.', badge:'free' },
+    ],
+    tip:'News Feed key decisions: virtualization for performance, cursor pagination (not offset), optimistic like updates, WebSocket for real-time new post notification.'
+  },
+  'w10-m1': {
+    links:[
+      { icon:'🔥', name:'GreatFrontEnd — Typeahead / Autocomplete', url:'https://www.greatfrontend.com/questions/user-interface/autocomplete', desc:'Full spec + worked solution.', badge:'must' },
+      { icon:'🎥', name:'Build a React Autocomplete from scratch', url:'https://www.youtube.com/results?search_query=react+autocomplete+from+scratch+interview', desc:'Watch a walkthrough to understand scope before timing yourself.', badge:'free' },
+    ],
+    tip:'Autocomplete checklist: debounce (300ms), keyboard nav (↑↓ Enter Esc), highlighted matching text, loading + empty states, aria-combobox accessibility.'
+  },
+  'w11-t3': {
+    links:[
+      { icon:'📖', name:'TypeScript docs — Generics', url:'https://www.typescriptlang.org/docs/handbook/2/generics.html', desc:'Official handbook chapter on generics.', badge:'free' },
+      { icon:'🔥', name:'Type Challenges — Easy set', url:'https://github.com/type-challenges/type-challenges', desc:'Start with Easy difficulty. Pick, Readonly, TupleToObject, First, Length.', badge:'must' },
+      { icon:'📖', name:'TypeScript Deep Dive — Generics', url:'https://basarat.gitbook.io/typescript/type-system/generics', desc:'Basarat\'s free book. Generics chapter is excellent.', badge:'free' },
+    ],
+    tip:'Generic constraint syntax: function fn<T extends { id: number }>(item: T) — T must have an id field. Very common in component prop typing.'
+  },
+  'w11-t5': {
+    links:[
+      { icon:'📖', name:'TypeScript docs — Utility Types', url:'https://www.typescriptlang.org/docs/handbook/utility-types.html', desc:'Every built-in utility type with examples.', badge:'must' },
+      { icon:'🔥', name:'Type Challenges — Implement utility types', url:'https://github.com/type-challenges/type-challenges?tab=readme-ov-file#medium', desc:'Challenges that ask you to implement Partial, Pick etc from scratch.', badge:'must' },
+    ],
+    tip:'Build Partial<T>, Pick<T,K>, ReturnType<F> from scratch using mapped types and conditional types. Understanding the implementation makes you 10x better at using them.'
+  },
+  'w12-t2': {
+    links:[
+      { icon:'📖', name:'Testing Library docs', url:'https://testing-library.com/docs/react-testing-library/intro/', desc:'Official RTL docs. Read the "Guiding Principles" page first.', badge:'must' },
+      { icon:'📖', name:'Kent C Dodds — Common mistakes with RTL', url:'https://kentcdodds.com/blog/common-mistakes-with-react-testing-library', desc:'The most important RTL article. Read before writing a single test.', badge:'must' },
+    ],
+    tip:'Query priority (RTL recommends): getByRole → getByLabelText → getByPlaceholderText → getByText → getByTestId. getByRole is the most accessible and most robust.'
+  },
+  'w13-b1': {
+    links:[
+      { icon:'📖', name:'Amazon — Leadership Principles', url:'https://www.amazon.jobs/content/en/our-workplace/leadership-principles', desc:'All 16 leadership principles. Have one example per principle.', badge:'must' },
+      { icon:'📖', name:'STAR method guide — The Muse', url:'https://www.themuse.com/advice/star-interview-method', desc:'How to structure STAR answers with examples.', badge:'free' },
+      { icon:'🎥', name:'Jeff Haden — How to Answer Behavioral Questions', url:'https://www.youtube.com/results?search_query=how+to+answer+behavioral+interview+questions+STAR', desc:'Video walkthrough of strong vs weak STAR answers.', badge:'free' },
+    ],
+    tip:'Action should be 70% of your STAR answer. Interviewers want to know what YOU specifically did — not "we decided" or "the team built". Be specific and use "I".'
+  },
+  'w13-m1': {
+    links:[
+      { icon:'🔥', name:'interviewing.io — Mock interviews', url:'https://interviewing.io/', desc:'Anonymous mocks with real FAANG engineers. Best feedback available.', badge:'must' },
+      { icon:'🔥', name:'Pramp — Free peer-to-peer mocks', url:'https://www.pramp.com/', desc:'Free. Match with another candidate. Both interview each other.', badge:'free' },
+      { icon:'📖', name:'GreatFrontEnd — Practice problems', url:'https://www.greatfrontend.com/practice', desc:'Frontend-specific coding + system design practice.', badge:'must' },
+    ],
+    tip:'Treat every mock like the real thing: camera on, talk through approach before coding, state complexity at the end. Reviewing mocks without changing behaviour = wasted time.'
+  },
+  'w14-d2': {
+    links:[
+      { icon:'🔥', name:'LeetCode #146 — LRU Cache', url:'https://leetcode.com/problems/lru-cache/', desc:'Most common "hard" frontend interview question. Know this cold.', badge:'must' },
+      { icon:'🎥', name:'NeetCode — LRU Cache', url:'https://www.youtube.com/watch?v=7ABFKPK2hD4', desc:'HashMap + Doubly Linked List. Best video explanation.', badge:'must' },
+    ],
+    tip:'LRU Cache = HashMap (O(1) lookup) + Doubly Linked List (O(1) order management). Dummy head and tail nodes simplify the edge cases dramatically.'
+  },
+  'w15-r1': {
+    links:[
+      { icon:'📖', name:'Levels.fyi — Salary + interview data', url:'https://www.levels.fyi/', desc:'Research compensation. Know what you are worth before negotiating.', badge:'free' },
+      { icon:'📖', name:'Blind — Interview experiences', url:'https://www.teamblind.com/', desc:'Real interview experiences shared by employees at each company.', badge:'free' },
+      { icon:'📖', name:'Glassdoor — Interview questions', url:'https://www.glassdoor.com/', desc:'Specific interview questions by company and role.', badge:'free' },
+    ],
+    tip:'Quantify EVERY bullet: "Improved performance" → "Reduced LCP by 800ms (43% improvement) by preloading hero images and code-splitting the dashboard bundle (230KB → 87KB)".'
+  },
+  'w16-e1': {
+    links:[
+      { icon:'📖', name:'GreatFrontEnd — Coding interview tips', url:'https://www.greatfrontend.com/blog/how-to-prepare-for-frontend-interviews', desc:'Complete guide to frontend coding interview execution.', badge:'must' },
+      { icon:'📖', name:'Exponent — System design interview tips', url:'https://www.youtube.com/c/ExponentTV', desc:'YouTube channel with mock system design interviews.', badge:'free' },
+    ],
+    tip:'The single most impactful habit: clarify before you code. "Before I start, let me make sure I understand — are there constraints on time complexity?" This alone signals senior thinking.'
+  }
+};
+
+const WEEKS = [
+  { id:1, phase:1, title:'JS Execution Model', desc:'Execution context, scope chain, hoisting, closures, event loop, Promises. The absolute foundation — everything in JS flows from these concepts.',
+    sections:[
+      { id:'w1-concepts', icon:'📖', title:'Core concepts to master', time:'Mon–Fri mornings', tasks:[
+        { id:'w1-t1', title:'Execution context & call stack', desc:'Global EC vs Function EC. Creation phase (memory) + Execution phase. Draw the stack on paper as you read.' },
+        { id:'w1-t2', title:'Hoisting deep dive', desc:'var vs let/const TDZ vs function declarations. Predict output of 5 hoisting snippets before running them.' },
+        { id:'w1-t3', title:'Scope chain & closures', desc:'Lexical scope, scope chain traversal. The classic loop+var bug + 3 fixes. Counter factory pattern.' },
+        { id:'w1-t4', title:'Event loop internals', desc:'Watch Philip Roberts JSConf talk. Draw: call stack → Web APIs → task queue → microtask queue. Trace 5 snippets.' },
+        { id:'w1-t5', title:'Microtasks vs macrotasks', desc:'Promise callbacks = microtask. setTimeout = macrotask. Microtasks drain completely between every task.' },
+        { id:'w1-t6', title:'Promises & async/await', desc:'3 promise states. .then() chaining. .catch() vs second arg. async/await error handling with try/catch.' },
+      ]},
+      { id:'w1-exercises', icon:'⚡', title:'Build from scratch (interviews!)', time:'Mon–Fri evenings', tasks:[
+        { id:'w1-e1', title:'Implement memoize(fn)', desc:'Cache results based on arguments. Handle multiple args with JSON.stringify key. Add cache size limit as bonus.' },
+        { id:'w1-e2', title:'Implement debounce(fn, delay)', desc:'Most common FAANG screen question. Add leading edge option as bonus.' },
+        { id:'w1-e3', title:'Implement throttle(fn, limit)', desc:'Fire at most once per limit ms. Trailing call option as bonus.' },
+        { id:'w1-e4', title:'Implement curry(fn)', desc:'Transform f(a,b,c) into f(a)(b)(c). Should also handle f(a,b)(c) and f(a)(b,c).' },
+        { id:'w1-e5', title:'Implement Promise.all()', desc:'Takes array of promises, resolves when all resolve (preserving order), rejects immediately if any rejects.' },
+        { id:'w1-e6', title:'Implement Promise.race()', desc:'First to settle (resolve OR reject) wins. Much simpler than .all().' },
+        { id:'w1-e7', title:'Build EventEmitter class', desc:'on/off/emit/once/removeAllListeners. Test every method. Push to GitHub. Real FAANG question.' },
+      ]},
+      { id:'w1-dsa', icon:'🧩', title:'DSA — Arrays & Hash Maps', time:'1h nightly', tasks:[
+        { id:'w1-d1', title:'LC #1 — Two Sum', desc:'Hash map complement lookup O(n). Learn the pattern: store complement, check on each element.' },
+        { id:'w1-d2', title:'LC #217 — Contains Duplicate', desc:'Set approach O(n). Get comfortable with the Set API.' },
+        { id:'w1-d3', title:'LC #121 — Best Time to Buy & Sell Stock', desc:'Single pass, track running minimum. O(n) time O(1) space.' },
+        { id:'w1-d4', title:'LC #20 — Valid Parentheses', desc:'Stack approach. Push open brackets, pop+check on close brackets.' },
+        { id:'w1-d5', title:'LC #3 — Longest Substring Without Repeating', desc:'Sliding window. Set tracks current window. Expand right, shrink left on duplicate.' },
+        { id:'w1-d6', title:'LC #70 — Climbing Stairs', desc:'DP intro: recognize Fibonacci. Bottom-up tabulation. O(n) → can you do O(1) space?' },
+      ]}
+    ]
+  },
+  { id:2, phase:1, title:'Prototypes + CSS Foundations', desc:'Prototypal inheritance, the this keyword, then CSS — Flexbox, Grid, specificity. Two important pillars in one week.',
+    sections:[
+      { id:'w2-proto', icon:'🔗', title:'Prototypal inheritance & this', tasks:[
+        { id:'w2-t1', title:'[[Prototype]] chain traversal', desc:'How property lookup walks the chain. Object.create() vs new keyword. hasOwnProperty() importance.' },
+        { id:'w2-t2', title:'Constructor functions vs ES6 classes', desc:'Class syntax is syntactic sugar. Understand what class X extends Y creates on the prototype chain.' },
+        { id:'w2-t3', title:'4 rules of "this"', desc:'1) Implicit binding  2) Explicit (call/apply/bind)  3) new binding  4) Arrow functions (lexical this).' },
+        { id:'w2-t4', title:'Implement Object.create() from scratch', desc:'function myCreate(proto){} — create object with proto as [[Prototype]] without using Object.create.' },
+        { id:'w2-t5', title:'Implement Function.prototype.bind() from scratch', desc:'myBind(context,...args). Handle partial application. Common senior-level interview question.' },
+        { id:'w2-t6', title:'Generators and iterators', desc:'function*, yield, Symbol.iterator. Build a custom range iterator. Understand lazy evaluation.' },
+      ]},
+      { id:'w2-css', icon:'🎨', title:'CSS Foundations', tasks:[
+        { id:'w2-c1', title:'CSS specificity & cascade rules', desc:'Inline > ID > class > element. !important pitfalls. Specificity calculation. The cascade order.' },
+        { id:'w2-c2', title:'Flexbox mastery', desc:'Every property. main axis vs cross axis. flex-grow/shrink/basis. Complete CSS Flexbox Froggy.' },
+        { id:'w2-c3', title:'CSS Grid mastery', desc:'grid-template, auto-fit/fill, minmax(). Named lines. Grid areas. Complete CSS Grid Garden.' },
+        { id:'w2-c4', title:'CSS custom properties (variables)', desc:'--variable syntax, inheritance, scope. Using with calc(). Dynamic theming pattern.' },
+        { id:'w2-c5', title:'Build: Responsive card grid', desc:'3-column → 2 → 1 with CSS Grid auto-fit/minmax. No media queries needed.' },
+        { id:'w2-c6', title:'Build: Holy Grail Layout', desc:'Header/footer/3-column with Flexbox AND with Grid. Compare the two approaches.' },
+      ]},
+      { id:'w2-dsa', icon:'🧩', title:'DSA — Two Pointers & Binary Search', tasks:[
+        { id:'w2-d1', title:'LC #15 — 3Sum', desc:'Sort + two pointers. O(n²). Handle duplicates carefully.' },
+        { id:'w2-d2', title:'LC #238 — Product of Array Except Self', desc:'Two-pass prefix/suffix. O(n) without division. Beautiful algorithm.' },
+        { id:'w2-d3', title:'LC #33 — Search in Rotated Sorted Array', desc:'Binary search variant. Which half is sorted? Classic binary search adaptation.' },
+        { id:'w2-d4', title:'LC #153 — Find Minimum in Rotated Sorted Array', desc:'Binary search on rotation point. Master this before #33.' },
+      ]}
+    ]
+  },
+  { id:3, phase:1, title:'CSS Advanced + Browser APIs', desc:'CSS positioning, animations, responsive design, accessibility, and core browser APIs. This week makes your CSS production-grade.',
+    sections:[
+      { id:'w3-css-adv', icon:'✨', title:'Advanced CSS', tasks:[
+        { id:'w3-t1', title:'Positioning & stacking context', desc:'static/relative/absolute/fixed/sticky. What creates a stacking context? z-index only works within stacking context.' },
+        { id:'w3-t2', title:'CSS animations & transitions', desc:'@keyframes, animation-delay for staggering. will-change: transform. transform vs top/left (performance).' },
+        { id:'w3-t3', title:'Responsive design — mobile-first', desc:'min-width media queries. clamp() for fluid typography. Container queries.' },
+        { id:'w3-t4', title:'BEM methodology & CSS architecture', desc:'Block__Element--Modifier. Why it solves specificity wars. CSS modules vs CSS-in-JS tradeoffs.' },
+        { id:'w3-t5', title:'Build: Animated hamburger menu', desc:'Pure CSS transform animation. No JS needed. 3 bars → X. Transitions on transform and opacity.' },
+        { id:'w3-t6', title:'Build: CSS-only tooltip + modal trigger', desc:':focus-within + position absolute for tooltip. dialog element. Accessibility with ARIA.' },
+      ]},
+      { id:'w3-a11y', icon:'♿', title:'Accessibility (a11y)', tasks:[
+        { id:'w3-a1', title:'Semantic HTML & ARIA roles', desc:'nav, main, article, section, aside. ARIA roles, properties, states. When NOT to use ARIA (First Rule).' },
+        { id:'w3-a2', title:'Keyboard navigation & focus management', desc:'tabIndex, focus trap in modals, skip links, visible focus indicators. WCAG 2.1 AA requirements.' },
+        { id:'w3-a3', title:'Colour contrast & accessible typography', desc:'4.5:1 ratio for normal text. DevTools contrast checker. Accessible font sizes (16px base).' },
+      ]},
+      { id:'w3-apis', icon:'🌐', title:'Browser APIs', tasks:[
+        { id:'w3-ap1', title:'DOM manipulation & event delegation', desc:'querySelector, createElement, append. Event delegation pattern — one listener on parent.' },
+        { id:'w3-ap2', title:'Intersection Observer', desc:'Lazy loading, infinite scroll, scroll animations. Better than scroll event listeners.' },
+        { id:'w3-ap3', title:'localStorage / sessionStorage / cookies / IndexedDB', desc:'Capacity limits. Sync vs async. Security considerations (httpOnly cookies).' },
+        { id:'w3-ap4', title:'Fetch API + AbortController', desc:'fetch() over XHR. Headers, methods, body. AbortController for cancellable requests.' },
+      ]},
+      { id:'w3-dsa', icon:'🧩', title:'DSA — Sliding Window', tasks:[
+        { id:'w3-d1', title:'LC #11 — Container With Most Water', desc:'Two pointers from both ends. O(n). Classic setup.' },
+        { id:'w3-d2', title:'LC #42 — Trapping Rain Water', desc:'Harder two-pointer. Also solvable with stack or prefix max arrays.' },
+        { id:'w3-d3', title:'LC #49 — Group Anagrams', desc:'HashMap with sorted string key. Good HashMap grouping practice.' },
+        { id:'w3-d4', title:'LC #347 — Top K Frequent Elements', desc:'HashMap + sort or bucket sort. Know the O(n log n) solution clearly.' },
+      ]}
+    ]
+  },
+  { id:4, phase:1, title:'Browser Internals + Network', desc:'Critical rendering path, reflow/repaint, HTTP, CORS, security. What FAANG senior interviews expect you to know cold.',
+    sections:[
+      { id:'w4-browser', icon:'🖥️', title:'Browser internals', tasks:[
+        { id:'w4-t1', title:'Critical rendering path', desc:'HTML→DOM, CSS→CSSOM→Render Tree→Layout→Paint→Composite. Know each step and what blocks rendering.' },
+        { id:'w4-t2', title:'Reflow vs repaint vs composite', desc:'Reflow = geometry (expensive). Repaint = visual. Composite = GPU layer (cheapest). What triggers each?' },
+        { id:'w4-t3', title:'Render-blocking resources', desc:'CSS is render-blocking. JS is parser-blocking. defer vs async vs end of body differences.' },
+        { id:'w4-t4', title:'Web Workers & Service Workers', desc:'Web Workers: off-main-thread JS. Service Workers: network proxy, offline-first, cache API.' },
+      ]},
+      { id:'w4-network', icon:'🌍', title:'Networking & HTTP', tasks:[
+        { id:'w4-n1', title:'HTTP/1.1 vs HTTP/2 vs HTTP/3', desc:'HTTP/2: multiplexing, header compression. HTTP/3: QUIC over UDP. What each version solves.' },
+        { id:'w4-n2', title:'HTTPS & TLS handshake', desc:'Certificate chain, TLS 1.3. Why HTTP/2 requires HTTPS in practice. Mixed content issues.' },
+        { id:'w4-n3', title:'CORS in depth', desc:'Same-origin policy. Simple vs preflighted requests. Access-Control headers. Common CORS errors.' },
+        { id:'w4-n4', title:'Caching — Cache-Control, ETag', desc:'max-age, no-cache, no-store. ETag for conditional requests. stale-while-revalidate pattern.' },
+        { id:'w4-n5', title:'Web security — XSS, CSRF, Clickjacking', desc:'XSS: reflected vs stored vs DOM-based. CSRF: SameSite cookies. CSP headers.' },
+      ]},
+      { id:'w4-dsa', icon:'🧩', title:'DSA — Linked Lists', tasks:[
+        { id:'w4-d1', title:'LC #206 — Reverse Linked List', desc:'Iterative and recursive. Know both. Pointer manipulation fundamentals.' },
+        { id:'w4-d2', title:'LC #21 — Merge Two Sorted Lists', desc:'Dummy node technique. O(n+m). Recursive solution is elegant.' },
+        { id:'w4-d3', title:'LC #141 — Linked List Cycle', desc:"Floyd's slow/fast pointer. Space O(1)." },
+        { id:'w4-d4', title:'LC #143 — Reorder List', desc:'Combines find-middle + reverse + merge. Good synthesis problem.' },
+      ]}
+    ]
+  },
+  { id:5, phase:2, title:'React Core + Hooks', desc:'Virtual DOM, reconciliation, fiber architecture, and hooks internals. FAANG expects you to understand what React does under the hood.',
+    sections:[
+      { id:'w5-react-core', icon:'⚛️', title:'React internals', tasks:[
+        { id:'w5-t1', title:'Virtual DOM & reconciliation', desc:'VDOM diffing rules: same type = update, different type = unmount+mount. O(n) heuristic.' },
+        { id:'w5-t2', title:'React Fiber architecture', desc:'Fiber as unit of work. Incremental rendering. Priority-based scheduling. How Concurrent Mode is possible.' },
+        { id:'w5-t3', title:'Reconciliation keys', desc:'Why keys matter. Key as identity across renders. Why array index as key causes bugs.' },
+        { id:'w5-t4', title:'Build your own mini React', desc:"Rodrigo Pombo's guide. createElement, render, useState from scratch. Major insight." },
+      ]},
+      { id:'w5-hooks', icon:'🪝', title:'Hooks mastery', tasks:[
+        { id:'w5-h1', title:'useState & useEffect internals', desc:'Hooks as linked list in fiber. Why hooks must not be conditional. Stale closure problem.' },
+        { id:'w5-h2', title:'useCallback & useMemo — when to use', desc:'Only helpful when passing to React.memo child OR as dep in another hook. Measure first.' },
+        { id:'w5-h3', title:'useRef — mutable ref & stale closure fix', desc:'Persists without re-render. DOM access. useRef to read latest state in callbacks.' },
+        { id:'w5-h4', title:'useReducer — complex state logic', desc:'State machine pattern. When to prefer over useState: multiple sub-values, complex transitions.' },
+        { id:'w5-h5', title:'Custom hook: useFetch', desc:'Loading/data/error state. AbortController cleanup in useEffect. Retry logic as bonus.' },
+        { id:'w5-h6', title:'Custom hook: useDebounce', desc:'useRef for timer. Cleanup on unmount. Compose with your debounce() from Week 1.' },
+        { id:'w5-h7', title:'Custom hook: useLocalStorage', desc:'Sync state with localStorage. Handle SSR. JSON serialize/deserialize.' },
+      ]},
+      { id:'w5-dsa', icon:'🧩', title:'DSA — Binary Trees', tasks:[
+        { id:'w5-d1', title:'LC #104 — Max Depth of Binary Tree', desc:'Recursive DFS. Base case + return max(left,right)+1.' },
+        { id:'w5-d2', title:'LC #226 — Invert Binary Tree', desc:'Recursive swap. 5 lines. Know this cold.' },
+        { id:'w5-d3', title:'LC #102 — Level Order Traversal', desc:'BFS with queue. Key: use queue.length as inner loop bound.' },
+        { id:'w5-d4', title:'LC #100 — Same Tree', desc:'Recursive comparison. Good for understanding tree recursion pattern.' },
+        { id:'w5-d5', title:'LC #572 — Subtree of Another Tree', desc:'Combines same tree + traversal. Two recursive functions.' },
+      ]}
+    ]
+  },
+  { id:6, phase:2, title:'React Patterns + Context + React 18', desc:'Design patterns for scalable React apps, Context API, error boundaries, and React 18 concurrent features.',
+    sections:[
+      { id:'w6-patterns', icon:'🏛️', title:'React design patterns', tasks:[
+        { id:'w6-t1', title:'HOC (Higher Order Component)', desc:'Function that takes a component, returns enhanced component. withAuth, withLogger patterns.' },
+        { id:'w6-t2', title:'Render Props pattern', desc:'Passes rendering logic via prop. Mouse tracker classic example. Replaced mostly by hooks.' },
+        { id:'w6-t3', title:'Compound Components', desc:'Select/Option model. Context shares state between parent+child without prop drilling.' },
+        { id:'w6-t4', title:'Provider pattern', desc:'Context + custom hook. Export useMyContext() not Context directly. Prevents misuse.' },
+        { id:'w6-t5', title:'Polymorphic "as" prop pattern', desc:'"as" prop: <Button as="a" href="...">. TypeScript generics for this. Common in design systems.' },
+      ]},
+      { id:'w6-react18', icon:'⚛️', title:'Context API & React 18', tasks:[
+        { id:'w6-c1', title:'Context API — avoiding re-renders', desc:'Context change re-renders ALL consumers. Split contexts. useMemo context value.' },
+        { id:'w6-c2', title:'Error Boundaries', desc:'Must be class components. componentDidCatch. getDerivedStateFromError. Where to place them.' },
+        { id:'w6-c3', title:'React 18 — createRoot & automatic batching', desc:'createRoot(). Automatic batching in async event handlers. Concurrent rendering.' },
+        { id:'w6-c4', title:'useTransition & useDeferredValue', desc:'useTransition: mark update as non-urgent. useDeferredValue: defer re-render of subtree.' },
+        { id:'w6-c5', title:'Build: Theme provider with compound components', desc:'ThemeProvider + useTheme hook + dark/light toggle. Full pattern demo.' },
+      ]},
+      { id:'w6-dsa', icon:'🧩', title:'DSA — BST', tasks:[
+        { id:'w6-d1', title:'LC #98 — Validate Binary Search Tree', desc:'Pass valid range (min/max) recursively. Must propagate bounds down.' },
+        { id:'w6-d2', title:'LC #235 — Lowest Common Ancestor of BST', desc:'Use BST property. Both less = go left. Both greater = go right.' },
+        { id:'w6-d3', title:'LC #105 — Construct Tree from Preorder+Inorder', desc:'Root from preorder. Find root in inorder to split left/right subtrees.' },
+        { id:'w6-d4', title:'LC #230 — Kth Smallest in BST', desc:'Inorder traversal = sorted order. Iterative inorder with stack for O(1) space.' },
+      ]}
+    ]
+  },
+  { id:7, phase:2, title:'State Management + Architecture', desc:'Redux Toolkit, Zustand, React Query. How to architect large React apps. Feature-based folder structure.',
+    sections:[
+      { id:'w7-state', icon:'🗄️', title:'State management', tasks:[
+        { id:'w7-t1', title:'When to use which state type', desc:'Rule: keep state as local as possible. Local → Context → Zustand → React Query (server). Know the progression.' },
+        { id:'w7-t2', title:'Redux Toolkit — slices, thunks, selectors', desc:'createSlice, createAsyncThunk, RTK Query. Immer for immutable updates. Always use RTK, never hand-write Redux.' },
+        { id:'w7-t3', title:'RTK Query — data fetching + caching', desc:'defineApi, endpoints, useGetQuery. Automatic cache invalidation with tags.' },
+        { id:'w7-t4', title:'Zustand', desc:'Minimal boilerplate. set/get/subscribe. Middleware: devtools, immer, persist. When to choose over Redux.' },
+        { id:'w7-t5', title:'TanStack Query (React Query)', desc:'useQuery, useMutation, QueryClient. staleTime vs cacheTime. Optimistic updates. Gold standard for server state.' },
+      ]},
+      { id:'w7-arch', icon:'🏗️', title:'Application architecture', tasks:[
+        { id:'w7-a1', title:'Feature-based folder structure', desc:'features/auth, features/dashboard vs flat components/pages/hooks. Feature folder = colocation. Scales better.' },
+        { id:'w7-a2', title:'Module pattern & barrel files', desc:'index.ts barrel exports. Public API per feature. Avoids deep import paths.' },
+        { id:'w7-a3', title:'Custom hooks as service layer', desc:'useAuth, useProducts, useCart. Abstract API calls + state into hooks. Components become purely presentational.' },
+        { id:'w7-a4', title:'Build: Todo app with RTK + RTK Query', desc:'Full Redux Toolkit setup. Async thunks for API. Selectors with createSelector.' },
+      ]},
+      { id:'w7-dsa', icon:'🧩', title:'DSA — Graphs', tasks:[
+        { id:'w7-d1', title:'LC #200 — Number of Islands', desc:'DFS on 2D grid. Mark visited by mutating. Classic graph DFS.' },
+        { id:'w7-d2', title:'LC #133 — Clone Graph', desc:'BFS + HashMap (original → clone).' },
+        { id:'w7-d3', title:'LC #207 — Course Schedule', desc:'Topological sort / cycle detection. DFS with 3 colors.' },
+        { id:'w7-d4', title:'LC #417 — Pacific Atlantic Water Flow', desc:'BFS from both oceans inward. Multi-source BFS pattern.' },
+      ]}
+    ]
+  },
+  { id:8, phase:2, title:'React Performance + Core Web Vitals', desc:'Performance optimization is a HUGE topic at Google and Meta. Measure first, then fix. Never guess-optimize.',
+    sections:[
+      { id:'w8-perf', icon:'⚡', title:'React performance', tasks:[
+        { id:'w8-t1', title:'React DevTools Profiler', desc:'Record a profile. Identify slow components. Check "why did this render?" flame graph.' },
+        { id:'w8-t2', title:'React.memo — when it helps vs hurts', desc:'Shallow prop comparison. Only helps when parent re-renders often AND props are referentially stable.' },
+        { id:'w8-t3', title:'Code splitting with React.lazy + Suspense', desc:'Route-level splitting vs component-level. Dynamic import() for conditionals. Bundle analysis first.' },
+        { id:'w8-t4', title:'Virtualization with react-window', desc:'FixedSizeList, VariableSizeList. Only render visible rows. Essential for lists > 100 items.' },
+        { id:'w8-t5', title:'useTransition for expensive renders', desc:'Wrap non-urgent state updates. Input stays responsive. Real use case: search filter with big list.' },
+      ]},
+      { id:'w8-cwv', icon:'📊', title:'Core Web Vitals', tasks:[
+        { id:'w8-c1', title:'LCP — Largest Contentful Paint (target < 2.5s)', desc:'Fix: preload hero image, fast server, no render-blocking resources, critical CSS inline.' },
+        { id:'w8-c2', title:'INP — Interaction to Next Paint (target < 200ms)', desc:'Fix: break up long tasks, defer non-critical work, use web workers for computation.' },
+        { id:'w8-c3', title:'CLS — Cumulative Layout Shift (target < 0.1)', desc:'Fix: explicit width/height on images, reserve space for embeds, avoid inserting content above fold.' },
+        { id:'w8-c4', title:'Image optimization strategies', desc:'srcset + sizes. WebP/AVIF formats. lazy loading. blur-up placeholder technique.' },
+        { id:'w8-c5', title:'Run Lighthouse on your portfolio', desc:'Score your project. Fix every suggestion. Be able to discuss every metric in an interview.' },
+      ]},
+      { id:'w8-dsa', icon:'🧩', title:'DSA — Dynamic Programming', tasks:[
+        { id:'w8-d1', title:'LC #322 — Coin Change', desc:'Classic DP. dp[amount] = min coins. Build bottom-up.' },
+        { id:'w8-d2', title:'LC #300 — Longest Increasing Subsequence', desc:'O(n²) DP or O(n log n). Know the O(n²) version well.' },
+        { id:'w8-d3', title:'LC #1143 — Longest Common Subsequence', desc:'2D DP table. Draw the table to understand.' },
+        { id:'w8-d4', title:'LC #55 — Jump Game', desc:'Greedy O(n). Track max reachable index.' },
+      ]}
+    ]
+  },
+  { id:9, phase:3, title:'Frontend System Design I', desc:'The RADIO framework: Requirements → Architecture → Data model → Interface → Optimization. The most underprepared area.',
+    sections:[
+      { id:'w9-framework', icon:'📐', title:'System design framework', tasks:[
+        { id:'w9-t1', title:'RADIO framework — master this structure', desc:'R: Requirements. A: Architecture (component tree + data flow). D: Data model. I: Interface API. O: Optimisation.' },
+        { id:'w9-t2', title:'Requirements clarification practice', desc:'For every design: ask about scale (DAU), features to include/exclude, latency requirements, supported devices.' },
+        { id:'w9-t3', title:'Component tree design', desc:'How to draw a component hierarchy. Decide: single vs multiple components. Shared state location. Event flow.' },
+        { id:'w9-t4', title:'API contract design', desc:'REST vs GraphQL tradeoffs. Pagination (cursor vs offset). Response shape. Error handling.' },
+      ]},
+      { id:'w9-designs', icon:'🎯', title:'Practice designs — use RADIO for each', tasks:[
+        { id:'w9-d1', title:'Design: Facebook News Feed', desc:'Infinite scroll. Optimistic like updates. Real-time new posts. Virtual list for performance.' },
+        { id:'w9-d2', title:'Design: Google Autocomplete widget', desc:'Debounced API calls. Keyboard navigation. Highlight matching text. Caching. aria-combobox accessibility.' },
+        { id:'w9-d3', title:'Design: Photo Gallery with lazy loading', desc:'Masonry layout. IntersectionObserver lazy load. Progressive image loading (blur-up). Lightbox component.' },
+        { id:'w9-d4', title:'Design: Collaborative To-Do App', desc:'Real-time sync with WebSockets. Optimistic UI updates. Conflict resolution. Offline queue.' },
+      ]},
+      { id:'w9-dsa', icon:'🧩', title:'DSA — Heap / Priority Queue', tasks:[
+        { id:'w9-ds1', title:'LC #215 — Kth Largest Element', desc:'QuickSelect O(n) avg or min-heap O(n log k). Know both approaches.' },
+        { id:'w9-ds2', title:'LC #295 — Find Median from Data Stream', desc:'Two heaps: max-heap for lower half, min-heap for upper half.' },
+        { id:'w9-ds3', title:'LC #23 — Merge K Sorted Lists', desc:'Min-heap of (val, node) pairs. O(n log k).' },
+      ]}
+    ]
+  },
+  { id:10, phase:3, title:'Frontend System Design II + Machine Coding', desc:'Advanced system design (real-time, micro-frontends, offline-first) and intensive timed machine coding practice.',
+    sections:[
+      { id:'w10-advanced', icon:'🔬', title:'Advanced system design topics', tasks:[
+        { id:'w10-t1', title:'Real-time: WebSockets vs SSE vs polling', desc:'WebSocket: full-duplex (chat, collab). SSE: server→client only (notifications). Polling: simple but wasteful.' },
+        { id:'w10-t2', title:'Micro-frontends architecture', desc:'Module Federation (Webpack 5). iframe approach. Web Components. Tradeoffs: team autonomy vs bundle duplication.' },
+        { id:'w10-t3', title:'Offline-first with Service Workers', desc:'Cache strategies: Cache First, Network First, Stale-While-Revalidate. Background sync API.' },
+        { id:'w10-t4', title:'Authentication in SPAs', desc:'JWT storage: localStorage (XSS risk) vs httpOnly cookie (CSRF → SameSite=Strict). Refresh token rotation.' },
+        { id:'w10-t5', title:'Internationalization (i18n) architecture', desc:'React-intl or i18next. RTL layout support. Date/number formatting with Intl API.' },
+        { id:'w10-t6', title:'Design: Rich Text Editor', desc:'contenteditable vs Slate.js/TipTap architecture. Selection API. Toolbar state from selection.' },
+        { id:'w10-t7', title:'Design: Drag and Drop Kanban', desc:'Drag events vs Pointer events. Ghost element. Collision detection. react-dnd or @dnd-kit.' },
+      ]},
+      { id:'w10-machine', icon:'⏱️', title:'Machine coding — timed builds (45–60 min each)', tasks:[
+        { id:'w10-m1', title:'Build: Typeahead / Autocomplete', desc:'Debounced fetch. Keyboard nav (↑↓ Enter Esc). Highlight matched text. Loading state. Empty state.' },
+        { id:'w10-m2', title:'Build: Infinite scroll list', desc:'IntersectionObserver on sentinel element. Accumulate items. Loading spinner. Error + retry.' },
+        { id:'w10-m3', title:'Build: Star rating component', desc:'Half-stars. Hover preview. Accessible (radio inputs hidden, styled). Controlled + uncontrolled modes.' },
+        { id:'w10-m4', title:'Build: Multi-step form with validation', desc:'Step state machine. Per-step validation. Progress indicator. Back/forward navigation.' },
+        { id:'w10-m5', title:'Build: File uploader with drag-and-drop', desc:'Drag events. File validation (type, size). Multiple files. Progress bar. Cancel upload.' },
+      ]},
+      { id:'w10-dsa', icon:'🧩', title:'DSA — Advanced Patterns', tasks:[
+        { id:'w10-d1', title:'LC #76 — Minimum Window Substring', desc:'Sliding window with character count maps. Hard but classic.' },
+        { id:'w10-d2', title:'LC #239 — Sliding Window Maximum', desc:'Monotonic deque. O(n).' },
+        { id:'w10-d3', title:'LC #84 — Largest Rectangle in Histogram', desc:'Monotonic stack. Hard but tests stack understanding deeply.' },
+      ]}
+    ]
+  },
+  { id:11, phase:4, title:'TypeScript Mastery', desc:"FAANG codebases are TypeScript. You'll be asked to type code in machine coding rounds. Master generics and utility types.",
+    sections:[
+      { id:'w11-ts-core', icon:'🔷', title:'TypeScript foundations', tasks:[
+        { id:'w11-t1', title:'Type system fundamentals', desc:'Structural typing (not nominal). Type widening/narrowing. never, unknown vs any.' },
+        { id:'w11-t2', title:'Interfaces vs type aliases', desc:'Interface: extendable, declaration merging. Type: unions, intersections, mapped types.' },
+        { id:'w11-t3', title:'Generics — functions & components', desc:'<T> syntax. Constraints with extends. Default type params. Generic React components.' },
+        { id:'w11-t4', title:'Union & intersection types', desc:'A | B, A & B. Discriminated unions. Narrowing with type guards. instanceof, typeof, in.' },
+        { id:'w11-t5', title:'Utility types — Partial, Pick, Omit, Record', desc:'Partial<T>, Required<T>, Pick<T,K>, Omit<T,K>, Record<K,V>, ReturnType<F>, Awaited<T>.' },
+        { id:'w11-t6', title:'Conditional types & infer keyword', desc:'T extends U ? X : Y. infer R inside extends. Extract/Exclude built on this.' },
+      ]},
+      { id:'w11-ts-react', icon:'⚛️', title:'TypeScript + React', tasks:[
+        { id:'w11-r1', title:'Typing component props & events', desc:'PropsWithChildren. React.ChangeEvent<HTMLInputElement>. React.MouseEvent. Never use "any" for events.' },
+        { id:'w11-r2', title:'Typing refs & forwardRef', desc:'useRef<HTMLInputElement>(null). RefObject vs MutableRefObject. forwardRef<El, Props>.' },
+        { id:'w11-r3', title:'Typing context & custom hooks', desc:'createContext<T | undefined>(undefined). Return tuple as const for hook inference.' },
+        { id:'w11-r4', title:'Type Challenges — do 10 problems', desc:'github.com/type-challenges — Easy difficulty. Pick, Readonly, TupleToObject, First, Length, Exclude.' },
+      ]},
+      { id:'w11-dsa', icon:'🧩', title:'DSA — Backtracking', tasks:[
+        { id:'w11-d1', title:'LC #46 — Permutations', desc:'Backtracking template: choose, explore, unchoose.' },
+        { id:'w11-d2', title:'LC #78 — Subsets', desc:'Power set. For each element: include or exclude. 2^n subsets.' },
+        { id:'w11-d3', title:'LC #39 — Combination Sum', desc:'Backtracking with reuse. Sort + prune branches > target.' },
+        { id:'w11-d4', title:'LC #79 — Word Search', desc:'DFS on 2D grid with backtracking. Mark visited, unmark on backtrack.' },
+      ]}
+    ]
+  },
+  { id:12, phase:4, title:'Testing + Machine Coding Polish', desc:'Testing strategy, React Testing Library, and polishing your machine coding speed.',
+    sections:[
+      { id:'w12-testing', icon:'🧪', title:'Testing strategy', tasks:[
+        { id:'w12-t1', title:'Testing pyramid', desc:'Many unit → fewer integration → few E2E. Cost vs confidence tradeoff.' },
+        { id:'w12-t2', title:'React Testing Library philosophy', desc:'"Test the way users use it." Query by role/label/text, not class/id. Avoid testing implementation.' },
+        { id:'w12-t3', title:'RTL: getBy vs queryBy vs findBy', desc:'getBy: throws if not found. queryBy: null. findBy: async promise. Know each use case.' },
+        { id:'w12-t4', title:'Testing user interactions with userEvent', desc:'userEvent.click, userEvent.type. waitFor for async updates. Wrap in act() when needed.' },
+        { id:'w12-t5', title:'Mocking with Jest', desc:'jest.fn(), jest.spyOn(). Module mocking. Mock timers (useFakeTimers) for debounce testing.' },
+        { id:'w12-t6', title:'Write tests for Week 1 utilities', desc:'Test debounce with fake timers. Test memoize. Test EventEmitter. Test Promise.all.' },
+      ]},
+      { id:'w12-machine', icon:'⏱️', title:'Machine coding — harder challenges', tasks:[
+        { id:'w12-m1', title:'Build: Calendar date picker', desc:'Month/year navigation. Day grid with CSS Grid. Disabled dates. Range selection bonus.' },
+        { id:'w12-m2', title:'Build: Virtualized list from scratch', desc:'Without react-window. Calculate visible range. Absolute positioning.' },
+        { id:'w12-m3', title:'Build: Toast notification system', desc:'Global context. Stack multiple toasts. Auto-dismiss with progress bar. Pause on hover.' },
+        { id:'w12-m4', title:'Build: Accessible modal from scratch', desc:'Focus trap. Close on Esc + backdrop. aria-modal, aria-labelledby. body scroll lock.' },
+      ]},
+      { id:'w12-assess', icon:'📊', title:'Self-assessment', tasks:[
+        { id:'w12-a1', title:'Review all Phase 1 + 2 concepts', desc:'Go through your notes. What\'s fuzzy? No new material — only reinforcement.' },
+        { id:'w12-a2', title:'Mock coding: implement debounce from memory', desc:'No references. No search. 10 minutes. This is exactly what a phone screen feels like.' },
+      ]}
+    ]
+  },
+  { id:13, phase:4, title:'Mock Interviews + Behavioral', desc:'Technical skill is half the game. Communication and behavioral stories are the other half. This week is about execution.',
+    sections:[
+      { id:'w13-behavioral', icon:'💬', title:'Behavioral interview prep', tasks:[
+        { id:'w13-b1', title:'STAR method — master the format', desc:'Situation (brief), Task, Action (most detail — what YOU did), Result (quantified impact).' },
+        { id:'w13-b2', title:'Story: Technical challenge you solved', desc:'Performance optimization, complex bug, architectural decision. Quantify the impact.' },
+        { id:'w13-b3', title:'Story: Conflict or disagreement', desc:'Disagreed with a tech decision. How handled? Outcome? Shows maturity.' },
+        { id:'w13-b4', title:'Story: Failure / mistake + learnings', desc:'Shows self-awareness. Focus 80% on learnings + what you changed.' },
+        { id:'w13-b5', title:'Story: Leadership / influence without authority', desc:'Led a technical initiative, onboarded someone, improved team process.' },
+        { id:'w13-b6', title:'Story: Prioritization under constraints', desc:'Deadline pressure, limited resources. How you triaged and what you shipped.' },
+      ]},
+      { id:'w13-mock', icon:'🎯', title:'Mock interviews this week', tasks:[
+        { id:'w13-m1', title:'Mock coding #1 — pramp.com or interviewing.io', desc:'Treat like the real thing. Camera on, talk through approach before coding.' },
+        { id:'w13-m2', title:'Mock coding #2 — different partner', desc:'Ask for a medium problem in arrays/strings or trees. Record if possible.' },
+        { id:'w13-m3', title:'Mock system design — design a news feed', desc:'Use RADIO. Talk for 45 min. Draw components + data flow.' },
+        { id:'w13-m4', title:'Mock behavioral — record yourself', desc:'Answer all STAR stories out loud, recorded. Watch it back. Improve. Re-record.' },
+      ]},
+      { id:'w13-company', icon:'🏢', title:'Company-specific prep', tasks:[
+        { id:'w13-c1', title:'Meta: Engineering blog + frontend at scale', desc:'Watch Meta Engineering talks. Note their specific frontend challenges (News Feed, React Native).' },
+        { id:'w13-c2', title:'Google: web.dev blog + Core Web Vitals focus', desc:'Core Web Vitals matter EXTRA at Google. Know Lighthouse inside out.' },
+        { id:'w13-c3', title:'Amazon: 16 Leadership Principles', desc:'Prepare one example per principle. Focus: Customer Obsession, Ownership, Bias for Action.' },
+      ]}
+    ]
+  },
+  { id:14, phase:4, title:'Intensive Mock + Gap Closing', desc:'Double down on mocks. Identify the 2-3 gaps from last week and fix them this week. Iterate fast.',
+    sections:[
+      { id:'w14-mock', icon:'🎯', title:'Mock interview week', tasks:[
+        { id:'w14-m1', title:'Mock coding #3 — target your weak pattern', desc:'If trees were weak: ask for a tree problem. Practice where you struggle, not where comfortable.' },
+        { id:'w14-m2', title:'Mock coding #4 — frontend utility implementation', desc:'Ask for: rate limiter, LRU cache, async queue. Frontend-specific. Timed.' },
+        { id:'w14-m3', title:'Mock system design — collaborative doc editor', desc:'Real-time sync, OT/CRDT mention, offline-first, conflict resolution.' },
+        { id:'w14-m4', title:'Mock behavioral — push back session', desc:'Ask friend to challenge your stories: "Can you quantify that?" "What did YOU specifically do?"' },
+      ]},
+      { id:'w14-dsa', icon:'🧩', title:'DSA weak spots', tasks:[
+        { id:'w14-d1', title:'Revisit 5 problems you got wrong', desc:"Don't look at solutions first. Try from scratch. Did you learn the pattern or just memorise?" },
+        { id:'w14-d2', title:'LC #146 — LRU Cache', desc:'HashMap + Doubly Linked List. O(1) get + put. Most common "hard" frontend interview question.' },
+        { id:'w14-d3', title:'LC #297 — Serialize/Deserialize Binary Tree', desc:'Preorder + null markers. Comes up as a DOM tree variant in frontend interviews.' },
+        { id:'w14-d4', title:'LC #127 — Word Ladder', desc:'BFS shortest path. Build graph of adjacent words. Tests BFS understanding deeply.' },
+      ]},
+      { id:'w14-portfolio', icon:'💼', title:'Portfolio & GitHub polish', tasks:[
+        { id:'w14-p1', title:'Polish GitHub README files', desc:'Every project: what it is, why you built it, technical decisions, screenshots, live demo link.' },
+        { id:'w14-p2', title:'Add TypeScript + tests to 1 portfolio project', desc:'Pick your best project. Full TypeScript strict mode. RTL tests for main components.' },
+        { id:'w14-p3', title:'Deploy and benchmark with Lighthouse', desc:'Deploy to Vercel/Netlify. Achieve 90+ Performance. Screenshot for interviews.' },
+      ]}
+    ]
+  },
+  { id:15, phase:5, title:'Final Polish + Applications', desc:'No new topics. Consolidate, polish, and apply. Resume needs metrics. Stories need sharpness. DSA patterns should be automatic.',
+    sections:[
+      { id:'w15-review', icon:'📋', title:'Final concept review', tasks:[
+        { id:'w15-t1', title:'Polyfill speed drill — no references', desc:'In 10 min each: Array.map, Array.filter, Array.reduce, Function.bind, Promise.all, debounce.' },
+        { id:'w15-t2', title:'System design speed review', desc:'In 5 min: outline RADIO for News Feed, Autocomplete, Kanban, Video Player, Chat App.' },
+        { id:'w15-t3', title:'Review all behavioral stories', desc:'Each story < 2 minutes. Remove filler. Add numbers. Action = 70% of each story.' },
+        { id:'w15-t4', title:'TypeScript utility types from memory', desc:'Write Partial<T>, Pick<T,K>, ReturnType<F>, Awaited<T> from scratch. Check answers.' },
+      ]},
+      { id:'w15-resume', icon:'📄', title:'Resume + applications', tasks:[
+        { id:'w15-r1', title:'Update resume with quantified impact metrics', desc:'"Reduced bundle size by 40% improving LCP by 800ms" not "improved performance".' },
+        { id:'w15-r2', title:'Tailor resume to frontend roles', desc:'FAANG frontend JDs look for: React, TypeScript, performance, a11y, system design.' },
+        { id:'w15-r3', title:'Prepare 5+ smart questions to ask', desc:'Team structure, tech stack, biggest frontend challenges, growth path, recent wins.' },
+        { id:'w15-r4', title:'Apply to 5–10 target companies', desc:'FAANG + adjacent: Stripe, Airbnb, Figma, Notion, Linear, Vercel. Referrals beat cold apply.' },
+        { id:'w15-r5', title:'Research each company interview style', desc:'Blind, Glassdoor, Levels.fyi. What rounds? Frontend coding? System design? Take-home?' },
+      ]},
+      { id:'w15-dsa', icon:'🧩', title:'DSA final review', tasks:[
+        { id:'w15-d1', title:'Pattern review: Two pointers — 2 problems', desc:'Fast solve. Confirm you know the pattern cold.' },
+        { id:'w15-d2', title:'Pattern review: BFS/DFS trees — 2 problems', desc:'One BFS (level order), one DFS (path sum or similar).' },
+        { id:'w15-d3', title:'Pattern review: Sliding window — 2 problems', desc:'Fixed window + variable window.' },
+        { id:'w15-d4', title:'Pattern review: DP — 2 problems', desc:'1D and 2D DP. Fibonacci-pattern and grid-pattern.' },
+      ]}
+    ]
+  },
+  { id:16, phase:5, title:'Interview Week', desc:'No new material. Light review only. Sleep, exercise, and trust the 15 weeks of preparation.',
+    sections:[
+      { id:'w16-mindset', icon:'🧘', title:'Mindset & preparation', tasks:[
+        { id:'w16-m1', title:'Daily: 30 min light review only (no new problems)', desc:'Skim notes. Re-read behavioral stories. Look at polyfill implementations. Nothing new.' },
+        { id:'w16-m2', title:'Physical: sleep 8h, exercise, good nutrition', desc:'Cognitive performance is highly correlated with sleep. This is not optional.' },
+        { id:'w16-m3', title:'Practice talking out loud — 20 min/day', desc:'Explain event loop, closures, reconciliation to yourself. Internalize the explanations.' },
+        { id:'w16-m4', title:'Final mock interview (day before is fine)', desc:'Light version — one coding, one system design. Warm up, not exhaust.' },
+      ]},
+      { id:'w16-execution', icon:'🎯', title:'Interview execution reminders', tasks:[
+        { id:'w16-e1', title:'Always clarify before you code', desc:'"Before I start coding — are there constraints on time/space complexity? Can I mutate the input?"', },
+        { id:'w16-e2', title:'Think aloud throughout — never go silent', desc:'"I\'m thinking about using a sliding window here because..." Never silent > 30 seconds.' },
+        { id:'w16-e3', title:'Brute force first, optimize after', desc:'"I see an O(n²) solution. Let me code that first, then optimize." Shows structured thinking.' },
+        { id:'w16-e4', title:'System design: drive the conversation', desc:"Proactively move through RADIO. Don't wait to be asked. Show you have a framework." },
+        { id:'w16-e5', title:'Pause before behavioral answers', desc:'3-second pause to collect STAR story is professional, not awkward.' },
+        { id:'w16-e6', title:'Ask good closing questions every round', desc:'"What\'s the biggest frontend performance challenge your team is working on right now?"' },
+        { id:'w16-e7', title:'You have done 15 weeks. Trust it.', desc:'Stay present in each conversation. Be curious. The offer is coming.' },
+      ]}
+    ]
+  }
+];
+
+// ═══════════════════════════════════════════════
+// STATE & STORAGE
+// ═══════════════════════════════════════════════
+let currentWeek = 1;
+let darkMode = localStorage.getItem('darkMode') === '1';
+
+function applyTheme() {
+  document.documentElement.setAttribute('data-theme', darkMode ? 'dark' : 'light');
+  const toggle = document.getElementById('darkToggle');
+  const knob = document.getElementById('darkKnob');
+  if (toggle) toggle.classList.toggle('on', darkMode);
+  if (knob) knob.textContent = darkMode ? '☽' : '☀';
+}
+
+function toggleDark() {
+  darkMode = !darkMode;
+  localStorage.setItem('darkMode', darkMode ? '1' : '0');
+  applyTheme();
+}
+
+function getChecked(id) { return localStorage.getItem('task_' + id) === '1'; }
+function setChecked(id, val) { val ? localStorage.setItem('task_' + id, '1') : localStorage.removeItem('task_' + id); }
+
+function getPhaseForWeek(wid) { return PHASES.find(p => p.weeks.includes(wid)); }
+function allTaskIds() {
+  let ids = [];
+  WEEKS.forEach(w => w.sections.forEach(s => s.tasks.forEach(t => ids.push(t.id))));
+  return ids;
+}
+
+function weekProgress(wid) {
+  const week = WEEKS.find(w => w.id === wid);
+  let total = 0, done = 0;
+  week.sections.forEach(s => s.tasks.forEach(t => { total++; if (getChecked(t.id)) done++; }));
+  return { total, done, pct: total > 0 ? Math.round(done / total * 100) : 0 };
+}
+
+function totalProgress() {
+  const ids = allTaskIds();
+  const done = ids.filter(id => getChecked(id)).length;
+  return { total: ids.length, done, pct: Math.round(done / ids.length * 100) };
+}
+
+function weeksDone() { return WEEKS.filter(w => weekProgress(w.id).pct === 100).length; }
+
+// ═══════════════════════════════════════════════
+// EXPORT / IMPORT
+// ═══════════════════════════════════════════════
+function exportProgress() {
+  const data = {};
+  allTaskIds().forEach(id => { if (getChecked(id)) data[id] = 1; });
+  data.__darkMode = darkMode ? 1 : 0;
+  data.__exportDate = new Date().toISOString();
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'faang-progress-' + new Date().toISOString().slice(0,10) + '.json';
+  a.click(); URL.revokeObjectURL(url);
+  showToast('Progress exported!');
+}
+
+function importProgress(event) {
+  const file = event.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      allTaskIds().forEach(id => setChecked(id, data[id] === 1));
+      if (data.__darkMode !== undefined) { darkMode = data.__darkMode === 1; localStorage.setItem('darkMode', darkMode ? '1' : '0'); applyTheme(); }
+      renderSidebar(); renderWeek(currentWeek); updateStats();
+      showToast('Progress loaded! 🎉');
+    } catch(err) { showToast('Invalid file. Please use an exported JSON.'); }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+// ═══════════════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════════════
+function showToast(msg) {
+  const container = document.getElementById('toast');
+  const el = document.createElement('div');
+  el.className = 'toast-item'; el.textContent = msg;
+  container.appendChild(el);
+  setTimeout(() => { el.style.opacity = '0'; el.style.transition = 'opacity .3s'; setTimeout(() => el.remove(), 300); }, 2200);
+}
+
+// ═══════════════════════════════════════════════
+// MODAL
+// ═══════════════════════════════════════════════
+function openModal(taskId) {
+  const taskData = findTask(taskId);
+  const res = TASK_RESOURCES[taskId];
+  document.getElementById('modal-title').textContent = taskData ? taskData.title : 'Resources';
+  document.getElementById('modal-desc').textContent = taskData ? taskData.desc : '';
+  const body = document.getElementById('modal-body');
+  if (!res) {
+    body.innerHTML = '<p style="font-size:13px;color:var(--muted);padding:8px 0">No specific resources added yet for this task. Use the general search tip below.</p><div class="tip-box" style="margin-top:12px"><p>💡 Search "<strong>' + (taskData ? taskData.title : '') + ' tutorial site:javascript.info OR site:mdn OR site:web.dev</strong>" for the best results.</p></div>';
+  } else {
+    let html = '';
+    if (res.links && res.links.length) {
+      html += '<div class="modal-section-title">Learning Resources</div>';
+      res.links.forEach(l => {
+        const badgeHtml = l.badge ? `<span class="rl-badge ${l.badge}">${l.badge === 'must' ? '⚑ must' : l.badge}</span>` : '';
+        html += `<a href="${l.url}" target="_blank" rel="noopener" class="resource-link">
+          <div class="rl-icon">${l.icon}</div>
+          <div class="rl-body">
+            <div class="rl-name">${l.name}</div>
+            <div class="rl-desc">${l.desc}</div>
+          </div>
+          ${badgeHtml}
+        </a>`;
+      });
+    }
+    if (res.practice && res.practice.length) {
+      html += '<div class="modal-section-title">Practice Exercises</div>';
+      res.practice.forEach(p => {
+        html += `<div class="practice-item"><code>${escHtml(p.code)}</code><p>${p.hint}</p></div>`;
+      });
+    }
+    if (res.tip) {
+      html += `<div class="tip-box" style="margin-top:12px"><p>💡 ${res.tip}</p></div>`;
+    }
+    body.innerHTML = html;
+  }
+  document.getElementById('modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function closeModalOutside(e) { if (e.target === document.getElementById('modal')) closeModal(); }
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+function escHtml(str) { return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function findTask(taskId) {
+  for (const w of WEEKS) for (const s of w.sections) for (const t of s.tasks) if (t.id === taskId) return t;
+  return null;
+}
+
+// ═══════════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════════
+const SVG_BOOK = `<svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>`;
+
+function updateStats() {
+  const tp = totalProgress();
+  document.getElementById('stat-done').textContent = tp.done;
+  document.getElementById('stat-total-sub').textContent = 'of ' + tp.total + ' total';
+  document.getElementById('stat-week').textContent = 'W' + currentWeek;
+  const phase = getPhaseForWeek(currentWeek);
+  document.getElementById('stat-phase').textContent = phase.name;
+  document.getElementById('stat-weeks-done').textContent = weeksDone();
+  document.getElementById('stat-pct').textContent = tp.pct + '%';
+  const motivate = tp.pct < 25 ? 'just getting started!' : tp.pct < 50 ? 'building momentum!' : tp.pct < 75 ? 'halfway there!' : tp.pct < 100 ? 'almost there!' : 'all done! 🎉';
+  document.getElementById('stat-motivate').textContent = motivate;
+  document.getElementById('overall-pct').textContent = tp.pct + '%';
+  document.getElementById('overall-bar').style.width = tp.pct + '%';
+}
+
+function renderSidebar() {
+  const container = document.getElementById('sidebar-weeks');
+  let html = '';
+  PHASES.forEach(ph => {
+    html += `<div class="phase-group"><div class="phase-label" style="color:${ph.color}">${ph.name}</div>`;
+    ph.weeks.forEach(wid => {
+      const week = WEEKS.find(w => w.id === wid);
+      const prog = weekProgress(wid);
+      const active = wid === currentWeek ? 'active' : '';
+      const dotColor = prog.pct === 100 ? ph.color : prog.pct > 0 ? ph.color + '66' : '';
+      html += `<div class="week-item ${active}" onclick="goWeek(${wid})">
+        <span class="week-num">W${wid}</span>
+        <span class="week-dot" style="${dotColor ? 'background:'+dotColor : ''}"></span>
+        <span class="week-name">${week.title}</span>
+        <span class="week-pct">${prog.pct}%</span>
+      </div>`;
+    });
+    html += `</div>`;
+  });
+  container.innerHTML = html;
+  // scroll active into view
+  const activeEl = container.querySelector('.week-item.active');
+  if (activeEl) activeEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+}
+
+function renderWeek(wid) {
+  const week = WEEKS.find(w => w.id === wid);
+  const phase = getPhaseForWeek(wid);
+  const prog = weekProgress(wid);
+
+  let html = `<div class="week-header">
+    <div class="week-header-top">
+      <div class="wh-left">
+        <h1>Week ${wid} — ${week.title}</h1>
+        <p>${week.desc}</p>
+      </div>
+      <span class="phase-badge" style="background:${phase.light};color:${phase.dark}">${phase.name}</span>
+    </div>
+    <div class="week-prog-row">
+      <div class="week-prog-bar"><div class="week-prog-fill" id="wpf" style="width:${prog.pct}%;background:${phase.color}"></div></div>
+      <span class="week-prog-label">${prog.done}/${prog.total} tasks (${prog.pct}%)</span>
+      <button class="clear-week-btn" onclick="clearWeek(${wid})">Reset week</button>
+    </div>
+  </div>`;
+
+  week.sections.forEach(sec => {
+    const secDone = sec.tasks.filter(t => getChecked(t.id)).length;
+    const secTotal = sec.tasks.length;
+    html += `<div class="section">
+      <div class="section-head" onclick="toggleSection('sb-${sec.id}',this)">
+        <span class="section-icon">${sec.icon}</span>
+        <span class="section-title">${sec.title}</span>
+        ${sec.time ? `<span class="section-meta">${sec.time}</span>` : ''}
+        <span class="section-meta" id="sm-${sec.id}">${secDone}/${secTotal}</span>
+        <span class="section-chevron open">▶</span>
+      </div>
+      <div class="section-body" id="sb-${sec.id}">`;
+
+    sec.tasks.forEach(task => {
+      const checked = getChecked(task.id);
+      const hasRes = !!TASK_RESOURCES[task.id];
+      html += `<div class="task-item ${checked ? 'checked' : ''}" id="ti-${task.id}">
+        <div class="task-cb ${checked ? 'checked' : ''}" id="cb-${task.id}" onclick="toggleTask('${task.id}')"></div>
+        <div class="task-content" onclick="toggleTask('${task.id}')">
+          <div class="task-title">${task.title}</div>
+          ${task.desc ? `<div class="task-desc">${task.desc}</div>` : ''}
+        </div>
+        <button class="task-resource-btn" onclick="openModal('${task.id}')" title="${hasRes ? 'View resources & exercises' : 'View tips'}">
+          ${SVG_BOOK}
+        </button>
+      </div>`;
+    });
+
+    html += `</div></div>`;
+  });
+
+  html += `<div class="week-nav">
+    <button class="nav-btn" onclick="goWeek(${wid-1})" ${wid===1?'disabled':''}>← Week ${wid-1}</button>
+    <button class="nav-btn primary" onclick="goWeek(${wid+1})" ${wid===16?'disabled':''}>Week ${wid+1} →</button>
+  </div>`;
+
+  document.getElementById('week-content').innerHTML = html;
+}
+
+function toggleSection(bodyId, header) {
+  const body = document.getElementById(bodyId);
+  const chevron = header.querySelector('.section-chevron');
+  body.classList.toggle('collapsed');
+  chevron.classList.toggle('open', !body.classList.contains('collapsed'));
+}
+
+function toggleTask(taskId) {
+  const current = getChecked(taskId);
+  setChecked(taskId, !current);
+  const item = document.getElementById('ti-' + taskId);
+  const cb = document.getElementById('cb-' + taskId);
+  if (item) item.classList.toggle('checked', !current);
+  if (cb) cb.classList.toggle('checked', !current);
+  updateWeekProgress();
+  updateStats();
+  renderSidebar();
+}
+
+function updateWeekProgress() {
+  const prog = weekProgress(currentWeek);
+  const wpf = document.getElementById('wpf');
+  if (wpf) { wpf.style.width = prog.pct + '%'; wpf.style.background = getPhaseForWeek(currentWeek).color; }
+  document.querySelectorAll('.week-prog-label').forEach(l => l.textContent = `${prog.done}/${prog.total} tasks (${prog.pct}%)`);
+  WEEKS.find(w => w.id === currentWeek).sections.forEach(sec => {
+    const secDone = sec.tasks.filter(t => getChecked(t.id)).length;
+    const el = document.getElementById('sm-' + sec.id);
+    if (el) el.textContent = `${secDone}/${sec.tasks.length}`;
+  });
+}
+
+function clearWeek(wid) {
+  if (!confirm('Reset all tasks for Week ' + wid + '?')) return;
+  WEEKS.find(w => w.id === wid).sections.forEach(sec => sec.tasks.forEach(t => setChecked(t.id, false)));
+  renderWeek(wid); updateStats(); renderSidebar();
+  showToast('Week ' + wid + ' reset.');
+}
+
+function goWeek(wid) {
+  if (wid < 1 || wid > 16) return;
+  currentWeek = wid;
+  renderWeek(wid); updateStats(); renderSidebar();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ═══════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════
+applyTheme();
+renderSidebar();
+renderWeek(1);
+updateStats();
+</script>
+</body>
+</html>
